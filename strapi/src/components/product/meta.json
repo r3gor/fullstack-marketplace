@@ -1,0 +1,8 @@
+{
+  "collectionName": "components_product_metas",
+  "info": { "displayName": "Meta", "icon": "information" },
+  "attributes": {
+    "barcode": { "type": "string" },
+    "qrCode": { "type": "string" }
+  }
+}

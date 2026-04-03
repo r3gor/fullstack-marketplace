@@ -1,0 +1,9 @@
+{
+  "collectionName": "components_product_dimensions",
+  "info": { "displayName": "Dimensions", "icon": "expand" },
+  "attributes": {
+    "width": { "type": "decimal" },
+    "height": { "type": "decimal" },
+    "depth": { "type": "decimal" }
+  }
+}

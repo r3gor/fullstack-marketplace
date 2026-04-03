@@ -1,0 +1,17 @@
+# Environment files
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+build/
+.cache/
+.tmp/
+.strapi/
+
+# Misc
+.DS_Store

@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "products",
+  "info": {
+    "singularName": "product",
+    "pluralName": "products",
+    "displayName": "Product"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "slug": { "type": "uid", "targetField": "title", "required": true },
+    "description": { "type": "text" },
+    "price": { "type": "decimal", "required": true },
+    "discountPercentage": { "type": "decimal" },
+    "rating": { "type": "decimal" },
+    "stock": { "type": "integer" },
+    "availabilityStatus": { "type": "string" },
+    "brand": { "type": "string" },
+    "sku": { "type": "string", "unique": true },
+    "thumbnail": { "type": "string" },
+    "images": { "type": "json" },
+    "weight": { "type": "decimal" },
+    "warrantyInformation": { "type": "text" },
+    "shippingInformation": { "type": "text" },
+    "returnPolicy": { "type": "text" },
+    "minimumOrderQuantity": { "type": "integer" },
+    "externalId": { "type": "integer", "unique": true },
+    "dimensions": {
+      "type": "component",
+      "repeatable": false,
+      "component": "product.dimensions"
+    },
+    "meta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "product.meta"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "products"
+    },
+    "tags": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::tag.tag"
+    }
+  }
+}
