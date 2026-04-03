@@ -143,9 +143,81 @@ Crear `app/products/[slug]/not-found.tsx` con mensaje amigable y link de vuelta 
 
 ---
 
+## ♻️ Refactor: Aplicar Atomic Design correctamente
+
+La primera implementación de `page.tsx` tenía dos antipatrones:
+- `DetailRow` y `PolicyCard` como funciones locales anónimas — no son componentes propios
+- Toda la columna derecha (categoría, título, rating, precio, stock, acciones, meta) inline — debería ser un Organism
+
+### Componentes a extraer
+
+```
+Atoms (nuevo):
+  StockBadge.tsx         → dot coloreado + texto de disponibilidad
+
+Molecules (nuevos):
+  Breadcrumb.tsx         → trail de navegación reutilizable en todo el sitio
+  PolicyCard.tsx         → tarjeta individual de política (warranty/shipping/return)
+
+Organisms (nuevo):
+  ProductInfo.tsx        → columna derecha entera (Server Component)
+                           recibe product: StrapiProduct y renderiza todo el bloque
+```
+
+### `page.tsx` resultante (limpio)
+
+```tsx
+export default async function ProductDetailPage({ params }) {
+  const product = await getProductBySlug(slug)
+
+  return (
+    <main>
+      <Breadcrumb items={[...]} />
+
+      <div className="grid ...">
+        <ProductGallery ... />
+        <ProductInfo product={product} />
+      </div>
+
+      {description && <section>...</section>}
+
+      <section className="grid sm:grid-cols-3">
+        <PolicyCard title="Garantía" text={warrantyInformation} icon="🛡️" />
+        <PolicyCard title="Envío" text={shippingInformation} icon="🚚" />
+        <PolicyCard title="Devoluciones" text={returnPolicy} icon="↩️" />
+      </section>
+
+      {/* Reviews placeholder */}
+    </main>
+  )
+}
+```
+
+### `ProductInfo` como Organism
+
+```tsx
+// organisms/ProductInfo.tsx — Server Component
+// Props: product: StrapiProduct
+// Renderiza:
+//   - CategoryChip (Link a /products?category=X)
+//   - h1 título
+//   - StarRating
+//   - PriceDisplay
+//   - StockBadge  ← nuevo atom
+//   - div acciones: AddToCartButton + FavoriteButton
+//   - dl tabla meta: Marca, SKU, Peso, Dimensiones
+```
+
 ## 📋 TODOs de implementación
 
-1. Crear `src/components/organisms/ProductGallery.tsx` (Client)
-2. Crear `app/products/[slug]/page.tsx` con `generateStaticParams` + SSR
-3. Crear `app/products/[slug]/not-found.tsx`
-4. Verificar que el build pasa y `next/image` resuelve las imágenes correctamente
+### Primera implementación (commit 6e3160d — completado)
+1. ✅ Crear `src/components/organisms/ProductGallery.tsx` (Client)
+2. ✅ Crear `app/products/[slug]/page.tsx` con `generateStaticParams` + SSR
+3. ✅ Crear `app/products/[slug]/not-found.tsx`
+
+### Refactor Atomic Design (pendiente)
+4. Crear `src/components/atoms/StockBadge.tsx`
+5. Crear `src/components/molecules/Breadcrumb.tsx`
+6. Crear `src/components/molecules/PolicyCard.tsx`
+7. Crear `src/components/organisms/ProductInfo.tsx`
+8. Refactorizar `app/products/[slug]/page.tsx` para usar los nuevos componentes
