@@ -23,7 +23,7 @@ export function SearchBar() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Buscar productos..."
-        className="h-9 w-48 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100 lg:w-64"
+        className="h-9 w-48 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white focus:ring-2 focus:ring-cyan-100 lg:w-64"
       />
       <Button variant="icon" type="submit" aria-label="Buscar">
         <svg

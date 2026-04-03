@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { MainLayout } from "@/components/templates/MainLayout";
 import { cn } from "@/lib/utils";
 
-const spaceGrotesk = Space_Grotesk({subsets:['latin'],variable:'--font-sans'});
-
-
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-//
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
+const satoshi = localFont({
+  src: "../public/fonts/Satoshi-Variable.woff2",
+  variable: "--font-sans",
+  weight: "300 900",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={cn("font-sans", spaceGrotesk.variable)}>
+    <html lang="es" className={cn("font-sans", satoshi.variable)}>
       <body className="flex min-h-full flex-col">
         <MainLayout>{children}</MainLayout>
       </body>

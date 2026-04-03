@@ -62,13 +62,13 @@ export function ProductCard({ product, isFavorite = false }: ProductCardProps) {
       <div className="flex flex-1 flex-col gap-2 p-4">
         {/* Category */}
         {category && (
-          <span className="text-xs font-medium uppercase tracking-wide text-indigo-500">
+          <span className="text-xs font-medium uppercase tracking-wide text-cyan-600">
             {category.name}
           </span>
         )}
 
         {/* Title */}
-        <Link href={`/products/${slug}`} className="hover:text-indigo-600">
+        <Link href={`/products/${slug}`} className="hover:text-cyan-600">
           <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-gray-800">
             {title}
           </h3>

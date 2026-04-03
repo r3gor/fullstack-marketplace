@@ -33,7 +33,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
         onClick={() => applyFilter(null)}
         className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
           !activeCategory
-            ? 'bg-gray-900 text-white'
+            ? 'bg-slate-950 text-white ring-2 ring-cyan-500'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
         }`}
       >
@@ -46,7 +46,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
           onClick={() => applyFilter(cat.name)}
           className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
             activeCategory === cat.name
-              ? 'bg-gray-900 text-white'
+              ? 'bg-slate-950 text-white ring-2 ring-cyan-500'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >

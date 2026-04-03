@@ -34,7 +34,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {category && (
         <Link
           href={`/products?category=${encodeURIComponent(category.name)}`}
-          className="w-fit rounded-full bg-indigo-50 px-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-indigo-600 hover:bg-indigo-100 transition-colors capitalize"
+          className="w-fit rounded-full bg-cyan-50 px-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-cyan-600 hover:bg-cyan-100 transition-colors capitalize"
         >
           {category.name}
         </Link>
