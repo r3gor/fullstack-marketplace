@@ -1,4 +1,4 @@
-import { NavLink } from '@/src/components/atoms/NavLink'
+import { NavLink } from '@/components/atoms/NavLink'
 
 const links = [
   { href: '/products', label: 'Productos' },

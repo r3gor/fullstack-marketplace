@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from '@/src/components/atoms/Button'
+import { Button } from '@/components/atoms/Button'
 
 // Placeholder: auth state will come from Zustand store in future iteration
 const isAuthenticated = false

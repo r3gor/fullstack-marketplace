@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { Logo } from '@/src/components/atoms/Logo'
-import { NavLinks } from '@/src/components/molecules/NavLinks'
+import { Logo } from '@/components/atoms/Logo'
+import { NavLinks } from '@/components/molecules/NavLinks'
 
 const legalLinks = [
   { href: '/shipping-policy', label: 'Envíos' },

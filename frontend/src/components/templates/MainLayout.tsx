@@ -1,7 +1,7 @@
-import { Providers } from '@/src/components/providers/Providers'
-import { Header } from '@/src/components/organisms/Header'
-import { Footer } from '@/src/components/organisms/Footer'
-import { CartDrawer } from '@/src/components/organisms/CartDrawer'
+import { Providers } from '@/components/providers/Providers'
+import { Header } from '@/components/organisms/Header'
+import { Footer } from '@/components/organisms/Footer'
+import { CartDrawer } from '@/components/organisms/CartDrawer'
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,7 +9,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
-      <CartDrawer />
+      {/* <CartDrawer /> */}
     </Providers>
   )
 }

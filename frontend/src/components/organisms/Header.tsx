@@ -1,8 +1,8 @@
-import { Logo } from '@/src/components/atoms/Logo'
-import { NavLinks } from '@/src/components/molecules/NavLinks'
-import { SearchBar } from '@/src/components/molecules/SearchBar'
-import { CartButton } from '@/src/components/molecules/CartButton'
-import { AuthNav } from '@/src/components/molecules/AuthNav'
+import { Logo } from '@/components/atoms/Logo'
+import { NavLinks } from '@/components/molecules/NavLinks'
+import { SearchBar } from '@/components/molecules/SearchBar'
+import { CartButton } from '@/components/molecules/CartButton'
+import { AuthNav } from '@/components/molecules/AuthNav'
 
 export function Header() {
   return (

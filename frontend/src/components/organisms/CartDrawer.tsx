@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/src/components/atoms/Button'
+import { Button } from '@/components/atoms/Button'
 
 // Placeholder: CartDrawer logic (open/close, items) will be wired to Zustand store in future iteration
 

@@ -1,18 +1,26 @@
 'use client'
 
 import { Button } from '@/components/atoms/Button'
-import { Badge } from '@/components/atoms/Badge'
 
-// Placeholder: cart count will come from Zustand store in future iteration
-const cartCount = 0
+interface AddToCartButtonProps {
+  documentId: string
+  title: string
+}
 
-export function CartButton() {
+export function AddToCartButton({ documentId: _documentId, title: _title }: AddToCartButtonProps) {
   return (
-    <Button variant="icon" aria-label="Abrir carrito" className="relative">
+    <Button
+      variant="primary"
+      className="w-full"
+      onClick={() => {
+        // TODO: connect to Zustand cart store
+        console.log('add to cart:', _documentId)
+      }}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -24,7 +32,7 @@ export function CartButton() {
         <circle cx="20" cy="21" r="1" />
         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
       </svg>
-      <Badge count={cartCount} />
+      Agregar al carrito
     </Button>
   )
 }

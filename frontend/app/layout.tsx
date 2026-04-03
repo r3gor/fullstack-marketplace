@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import { MainLayout } from "@/src/components/templates/MainLayout";
+import { MainLayout } from "@/components/templates/MainLayout";
+import { cn } from "@/lib/utils";
+
+const spaceGrotesk = Space_Grotesk({subsets:['latin'],variable:'--font-sans'});
+
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -27,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" className={cn("font-sans", spaceGrotesk.variable)}>
       <body className="flex min-h-full flex-col">
         <MainLayout>{children}</MainLayout>
       </body>

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Button } from '@/src/components/atoms/Button'
+import { Button } from '@/components/atoms/Button'
 
 export function SearchBar() {
   const router = useRouter()
