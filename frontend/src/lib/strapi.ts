@@ -137,3 +137,8 @@ export async function getCategories(): Promise<StrapiCategory[]> {
   const json = await res.json()
   return json.data
 }
+
+export async function getCategoryNames(): Promise<string[]> {
+  const categories = await getCategories()
+  return categories.map((c) => c.name)
+}
