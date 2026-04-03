@@ -77,6 +77,7 @@ export interface GetProductsParams {
   pageSize?: number
   category?: string
   search?: string
+  sort?: string // e.g. 'rating:desc', 'price:asc'
 }
 
 export interface GetProductsResult {
@@ -85,12 +86,13 @@ export interface GetProductsResult {
 }
 
 export async function getProducts(params: GetProductsParams = {}): Promise<GetProductsResult> {
-  const { page = 1, pageSize = 24, category, search } = params
+  const { page = 1, pageSize = 24, category, search, sort } = params
 
   let url = `${STRAPI_URL}/api/products?${PRODUCT_POPULATE}`
   url += `&pagination[page]=${page}&pagination[pageSize]=${pageSize}`
   if (category) url += `&filters[category][name][$eq]=${encodeURIComponent(category)}`
   if (search) url += `&filters[title][$containsi]=${encodeURIComponent(search)}`
+  if (sort) url += `&sort=${encodeURIComponent(sort)}`
 
   const res = await fetch(url, { next: { revalidate: 60 } })
 

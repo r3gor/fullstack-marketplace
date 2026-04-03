@@ -1,22 +1,22 @@
-import { getProducts } from '@/lib/strapi'
-import { ProductCard } from '@/components/molecules/ProductCard'
+import { HeroSection } from '@/components/organisms/HeroSection'
+import { FeaturedProducts } from '@/components/organisms/FeaturedProducts'
+import { FeaturedCategories } from '@/components/organisms/FeaturedCategories'
+import { PromoBanner } from '@/components/organisms/PromoBanner'
 
-export default async function Home() {
-  const { data: products, pagination } = await getProducts({ pageSize: 24 })
+export const revalidate = false // SSG — regenerate on deploy
 
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <div className="mb-6 flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold">Productos</h1>
-        <span className="text-sm text-gray-500">{pagination.total} productos</span>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.map((product) => (
-          <ProductCard key={product.documentId} product={product} />
-        ))}
-      </div>
-    </div>
-  )
+export const metadata = {
+  title: 'FS ECommerce — Tu tienda de confianza',
+  description: 'Encuentra los mejores productos de electrónica, moda, hogar y más. Envíos rápidos y devoluciones sin costo.',
 }
 
+export default function HomePage() {
+  return (
+    <>
+      <HeroSection />
+      <FeaturedProducts />
+      <FeaturedCategories />
+      <PromoBanner />
+    </>
+  )
+}
