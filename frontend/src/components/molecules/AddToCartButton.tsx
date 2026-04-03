@@ -5,13 +5,15 @@ import { Button } from '@/components/atoms/Button'
 interface AddToCartButtonProps {
   documentId: string
   title: string
+  disabled?: boolean
 }
 
-export function AddToCartButton({ documentId: _documentId, title: _title }: AddToCartButtonProps) {
+export function AddToCartButton({ documentId: _documentId, title: _title, disabled }: AddToCartButtonProps) {
   return (
     <Button
       variant="primary"
       className="w-full"
+      disabled={disabled}
       onClick={() => {
         // TODO: connect to Zustand cart store
         console.log('add to cart:', _documentId)

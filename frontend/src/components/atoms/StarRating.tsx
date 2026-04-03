@@ -1,9 +1,12 @@
 interface StarRatingProps {
   rating: number // 0-5
   maxStars?: number
+  showValue?: boolean
+  size?: 'sm' | 'md'
 }
 
-export function StarRating({ rating, maxStars = 5 }: StarRatingProps) {
+export function StarRating({ rating, maxStars = 5, showValue, size = 'sm' }: StarRatingProps) {
+  const starClass = size === 'md' ? 'h-5 w-5' : 'h-3.5 w-3.5'
   return (
     <div className="flex items-center gap-0.5" aria-label={`Rating: ${rating} out of ${maxStars}`}>
       {Array.from({ length: maxStars }).map((_, i) => {
@@ -15,7 +18,7 @@ export function StarRating({ rating, maxStars = 5 }: StarRatingProps) {
             key={i}
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            className="h-3.5 w-3.5"
+            className={starClass}
             aria-hidden="true"
           >
             {partial ? (
