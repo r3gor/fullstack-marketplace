@@ -5,6 +5,8 @@ import { ProductInfo } from '@/components/organisms/ProductInfo'
 import { Breadcrumb } from '@/components/molecules/Breadcrumb'
 import { PolicyCard } from '@/components/molecules/PolicyCard'
 
+export const revalidate = 60
+
 export async function generateStaticParams() {
   const slugs = await getProductSlugs()
   return slugs.map((slug) => ({ slug }))

@@ -103,7 +103,7 @@ export async function getProducts(params: GetProductsParams = {}): Promise<GetPr
 export async function getProductBySlug(slug: string): Promise<StrapiProduct | null> {
   const url = `${STRAPI_URL}/api/products?filters[slug][$eq]=${encodeURIComponent(slug)}&${PRODUCT_POPULATE}`
 
-  const res = await fetch(url, { cache: 'no-store' })
+  const res = await fetch(url, { next: { revalidate: 60 } })
 
   if (!res.ok) throw new Error(`Failed to fetch product: ${res.status}`)
 
