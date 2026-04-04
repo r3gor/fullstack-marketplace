@@ -159,7 +159,46 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
-components:
+  /users/me:
+    get:
+      operationId: getUsersMe
+      summary: Get authenticated user profile
+      tags:
+        - Users
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    patch:
+      operationId: updateUsersMe
+      summary: Update authenticated user profile
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
   schemas:
     HealthResponse:
       type: object
@@ -226,6 +265,22 @@ components:
           type: string
           format: email
           example: john@example.com
+
+    UpdateUserRequest:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Roger Updated
+        email:
+          type: string
+          format: email
+          example: roger@example.com
 
     Error:
       type: object

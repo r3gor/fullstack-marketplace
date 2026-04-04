@@ -16,11 +16,13 @@ func registerRoutes(
 	db *sql.DB,
 	cfg *config.Config,
 	authService *application.AuthService,
+	userService *application.UserService,
 	appLog *logger.AppLogger,
 ) {
 	healthHandler := handler.NewHealthHandler(db)
 	docsHandler := handler.NewDocsHandler("./docs/openapi.yaml")
 	authHandler := handler.NewAuthHandler(authService, cfg, appLog)
+	userHandler := handler.NewUserHandler(userService, appLog)
 
 	// Docs (public)
 	app.Get("/docs", docsHandler.ScalarUI)
@@ -37,4 +39,11 @@ func registerRoutes(
 	auth.Post("/login", authHandler.Login)
 	auth.Post("/logout", middleware.RequireAuth(cfg.JWTSecret), authHandler.Logout)
 	auth.Post("/refresh", authHandler.Refresh)
+
+	// Protected routes
+	protected := api.Group("", middleware.RequireAuth(cfg.JWTSecret))
+
+	users := protected.Group("/users")
+	users.Get("/me", userHandler.GetMe)
+	users.Patch("/me", userHandler.UpdateMe)
 }

@@ -47,6 +47,7 @@ func Run() {
 
 	// Services
 	authService := application.NewAuthService(userRepo, refreshTokenRepo, auditLog, cfg.RefreshTokenExpiry)
+	userService := application.NewUserService(userRepo, auditLog)
 
 	app := fiber.New(fiber.Config{
 		AppName:      "Fullstack E-commerce API",
@@ -64,7 +65,7 @@ func Run() {
 		AllowCredentials: true,
 	}))
 
-	registerRoutes(app, db, cfg, authService, appLog)
+	registerRoutes(app, db, cfg, authService, userService, appLog)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	log.Printf("server starting on %s (env: %s)", addr, cfg.Env)
@@ -78,8 +79,22 @@ func errorHandler(c *fiber.Ctx, err error) error {
 	if e, ok := err.(*fiber.Error); ok {
 		code = e.Code
 	}
+
+	errCode := map[int]string{
+		fiber.StatusBadRequest:          "validation_error",
+		fiber.StatusUnauthorized:        "unauthorized",
+		fiber.StatusForbidden:           "forbidden",
+		fiber.StatusNotFound:            "not_found",
+		fiber.StatusConflict:            "conflict",
+		fiber.StatusInternalServerError: "internal_server_error",
+	}
+	errKey, ok := errCode[code]
+	if !ok {
+		errKey = "internal_server_error"
+	}
+
 	return c.Status(code).JSON(fiber.Map{
-		"error":   "internal_server_error",
+		"error":   errKey,
 		"message": err.Error(),
 	})
 }
