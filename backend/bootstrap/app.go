@@ -40,6 +40,7 @@ func Run() {
 	// Repositories
 	userRepo := sqlite.NewUserRepository(db)
 	refreshTokenRepo := sqlite.NewRefreshTokenRepository(db)
+	favoriteRepo := sqlite.NewFavoriteRepository(db)
 
 	// Loggers
 	auditLog := logger.NewAuditLogger()
@@ -48,6 +49,7 @@ func Run() {
 	// Services
 	authService := application.NewAuthService(userRepo, refreshTokenRepo, auditLog, cfg.RefreshTokenExpiry)
 	userService := application.NewUserService(userRepo, auditLog)
+	favoriteService := application.NewFavoriteService(favoriteRepo, auditLog)
 
 	app := fiber.New(fiber.Config{
 		AppName:      "Fullstack E-commerce API",
@@ -65,7 +67,7 @@ func Run() {
 		AllowCredentials: true,
 	}))
 
-	registerRoutes(app, db, cfg, authService, userService, appLog)
+	registerRoutes(app, db, cfg, authService, userService, favoriteService, appLog)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	log.Printf("server starting on %s (env: %s)", addr, cfg.Env)

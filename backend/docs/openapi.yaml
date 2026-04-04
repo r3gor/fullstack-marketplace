@@ -199,6 +199,62 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "409":
           $ref: "#/components/responses/Conflict"
+
+  /favorites:
+    get:
+      operationId: listFavorites
+      summary: List user favorites
+      tags:
+        - Favorites
+      responses:
+        "200":
+          description: List of favorited product IDs with timestamps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FavoriteResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /favorites/{productId}:
+    post:
+      operationId: addFavorite
+      summary: Add product to favorites
+      tags:
+        - Favorites
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Added to favorites
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+    delete:
+      operationId: removeFavorite
+      summary: Remove product from favorites
+      tags:
+        - Favorites
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed from favorites
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
   schemas:
     HealthResponse:
       type: object
@@ -281,6 +337,20 @@ paths:
           type: string
           format: email
           example: roger@example.com
+
+    FavoriteResponse:
+      type: object
+      required:
+        - product_id
+        - created_at
+      properties:
+        product_id:
+          type: integer
+          example: 42
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-04-04T19:46:21Z"
 
     Error:
       type: object

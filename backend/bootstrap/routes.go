@@ -17,12 +17,14 @@ func registerRoutes(
 	cfg *config.Config,
 	authService *application.AuthService,
 	userService *application.UserService,
+	favoriteService *application.FavoriteService,
 	appLog *logger.AppLogger,
 ) {
 	healthHandler := handler.NewHealthHandler(db)
 	docsHandler := handler.NewDocsHandler("./docs/openapi.yaml")
 	authHandler := handler.NewAuthHandler(authService, cfg, appLog)
 	userHandler := handler.NewUserHandler(userService, appLog)
+	favoriteHandler := handler.NewFavoriteHandler(favoriteService, appLog)
 
 	// Docs (public)
 	app.Get("/docs", docsHandler.ScalarUI)
@@ -46,4 +48,9 @@ func registerRoutes(
 	users := protected.Group("/users")
 	users.Get("/me", userHandler.GetMe)
 	users.Patch("/me", userHandler.UpdateMe)
+
+	favorites := protected.Group("/favorites")
+	favorites.Get("", favoriteHandler.List)
+	favorites.Post("/:productId", favoriteHandler.Add)
+	favorites.Delete("/:productId", favoriteHandler.Remove)
 }
