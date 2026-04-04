@@ -57,7 +57,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	accessToken, err := h.generateAccessToken(user.ID)
 	if err != nil {
-		h.log.Error("failed to generate access token", "error", err, "user_id", user.ID)
+		h.log.Error("failed to generate access token", "error", err, "user_id", user.ID, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to generate token")
 	}
 
@@ -76,7 +76,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	rawRefreshToken := c.Cookies("refresh_token")
 
 	if err := h.authService.Logout(c.Context(), rawRefreshToken, userID); err != nil {
-		h.log.Error("logout error", "error", err, "user_id", userID)
+		h.log.Error("logout error", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
 	}
 
 	h.clearAuthCookies(c)
@@ -94,7 +94,7 @@ func (h *AuthHandler) Refresh(c *fiber.Ctx) error {
 
 	accessToken, err := h.generateAccessToken(user.ID)
 	if err != nil {
-		h.log.Error("failed to generate access token on refresh", "error", err, "user_id", user.ID)
+		h.log.Error("failed to generate access token on refresh", "error", err, "user_id", user.ID, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to generate token")
 	}
 
@@ -169,7 +169,7 @@ func (h *AuthHandler) handleError(c *fiber.Ctx, err error, op string) error {
 			"error": "not_found", "message": notFoundErr.Error(),
 		})
 	default:
-		h.log.Error("unexpected error", "operation", op, "error", err)
+		h.log.Error("unexpected error", "operation", op, "error", err, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "an unexpected error occurred")
 	}
 }

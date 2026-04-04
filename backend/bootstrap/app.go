@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/bootstrap/config"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/strapi"
@@ -65,9 +65,8 @@ func Run() {
 	})
 
 	app.Use(recover.New())
-	app.Use(fiberlogger.New(fiberlogger.Config{
-		Format: "[${time}] ${status} - ${method} ${path} (${latency})\n",
-	}))
+	app.Use(middleware.CorrelationID())
+	app.Use(middleware.RequestLogger(appLog))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:3000",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",

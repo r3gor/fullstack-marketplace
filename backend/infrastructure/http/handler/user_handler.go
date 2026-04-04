@@ -76,7 +76,7 @@ func (h *UserHandler) handleError(c *fiber.Ctx, err error, op string) error {
 			"error": "not_found", "message": notFoundErr.Error(),
 		})
 	default:
-		h.log.Error("unexpected error", "operation", op, "error", err)
+		h.log.Error("unexpected error", "operation", op, "error", err, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "an unexpected error occurred")
 	}
 }

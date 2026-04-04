@@ -27,7 +27,7 @@ func (h *OrderHandler) List(c *fiber.Ctx) error {
 
 	orders, err := h.orderService.ListOrders(c.Context(), userID)
 	if err != nil {
-		h.log.Error("failed to list orders", "error", err, "user_id", userID)
+		h.log.Error("failed to list orders", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to retrieve orders")
 	}
 
@@ -51,7 +51,7 @@ func (h *OrderHandler) Create(c *fiber.Ctx) error {
 				"error": "validation_error", "message": valErr.Message,
 			})
 		}
-		h.log.Error("failed to create order", "error", err, "user_id", userID)
+		h.log.Error("failed to create order", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to create order")
 	}
 
@@ -71,7 +71,7 @@ func (h *OrderHandler) Get(c *fiber.Ctx) error {
 				"error": "not_found", "message": notFoundErr.Error(),
 			})
 		}
-		h.log.Error("failed to get order", "error", err, "user_id", userID)
+		h.log.Error("failed to get order", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to retrieve order")
 	}
 

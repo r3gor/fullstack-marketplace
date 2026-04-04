@@ -35,7 +35,6 @@ func registerRoutes(
 	app.Get("/docs/openapi.yaml", docsHandler.Spec)
 
 	api := app.Group("/api/v1")
-	api.Use(middleware.CorrelationID())
 
 	api.Get("/health", healthHandler.Check)
 

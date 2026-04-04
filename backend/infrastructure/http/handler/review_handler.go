@@ -49,7 +49,7 @@ func (h *ReviewHandler) Create(c *fiber.Ctx) error {
 				"error": "conflict", "message": conflictErr.Message,
 			})
 		default:
-			h.log.Error("failed to submit review", "error", err, "user_id", userID, "product_id", productID)
+			h.log.Error("failed to submit review", "error", err, "user_id", userID, "product_id", productID, "correlation_id", middleware.GetCorrelationID(c))
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to submit review")
 		}
 	}

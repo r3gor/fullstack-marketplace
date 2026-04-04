@@ -27,7 +27,7 @@ func (h *FavoriteHandler) List(c *fiber.Ctx) error {
 
 	favorites, err := h.favoriteService.List(c.Context(), userID)
 	if err != nil {
-		h.log.Error("failed to list favorites", "error", err, "user_id", userID)
+		h.log.Error("failed to list favorites", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to retrieve favorites")
 	}
 
@@ -50,7 +50,7 @@ func (h *FavoriteHandler) Add(c *fiber.Ctx) error {
 				"error": "conflict", "message": conflictErr.Message,
 			})
 		}
-		h.log.Error("failed to add favorite", "error", err, "user_id", userID)
+		h.log.Error("failed to add favorite", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to add favorite")
 	}
 
@@ -67,7 +67,7 @@ func (h *FavoriteHandler) Remove(c *fiber.Ctx) error {
 	}
 
 	if err := h.favoriteService.Remove(c.Context(), userID, productID); err != nil {
-		h.log.Error("failed to remove favorite", "error", err, "user_id", userID)
+		h.log.Error("failed to remove favorite", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to remove favorite")
 	}
 
