@@ -59,8 +59,9 @@ func Run() {
 	reviewService := application.NewReviewService(orderRepo, reviewSubmissionRepo, strapiClient, auditLog)
 
 	app := fiber.New(fiber.Config{
-		AppName:      "Fullstack E-commerce API",
-		ErrorHandler: errorHandler,
+		AppName:        "Fullstack E-commerce API",
+		ErrorHandler:   errorHandler,
+		ReadBufferSize: 16 * 1024, // 16 KB — prevents 431 when JWT cookies are sent
 	})
 
 	app.Use(recover.New())
