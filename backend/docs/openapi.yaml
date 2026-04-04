@@ -388,6 +388,10 @@ components:
         - name
         - email
         - password
+      example:
+        name: John Doe
+        email: john@example.com
+        password: supersecret123
       properties:
         name:
           type: string
@@ -408,6 +412,9 @@ components:
       required:
         - email
         - password
+      example:
+        email: john@example.com
+        password: supersecret123
       properties:
         email:
           type: string
@@ -441,6 +448,9 @@ components:
       required:
         - name
         - email
+      example:
+        name: Roger Updated
+        email: roger@example.com
       properties:
         name:
           type: string
@@ -470,6 +480,14 @@ components:
       type: object
       required:
         - items
+      example:
+        items:
+          - product_id: 5
+            quantity: 2
+            price_at_purchase: 29.99
+          - product_id: 12
+            quantity: 1
+            price_at_purchase: 49.99
       properties:
         items:
           type: array
@@ -538,6 +556,9 @@ components:
       required:
         - rating
         - comment
+      example:
+        rating: 4
+        comment: Great product, exactly as described. Fast shipping.
       properties:
         rating:
           type: integer
