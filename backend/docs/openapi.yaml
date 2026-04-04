@@ -321,6 +321,53 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /products/{productId}/reviews:
+    post:
+      operationId: createReview
+      summary: Submit a product review
+      description: |
+        Validates before creating:
+        1. User is authenticated
+        2. User has a paid/shipped/delivered order containing this product
+        3. User has not already reviewed this product
+
+        On success, creates a review in Strapi with `status: pending`.
+        A Strapi admin can then change it to `approved` or `rejected`.
+        The frontend only receives `approved` reviews from Strapi.
+      tags:
+        - Reviews
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewRequest"
+      responses:
+        "201":
+          description: Review submitted and pending moderation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: review submitted and pending moderation
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   schemas:
     HealthResponse:
       type: object
@@ -484,6 +531,23 @@ paths:
         created_at:
           type: string
           format: date-time
+
+    CreateReviewRequest:
+      type: object
+      required:
+        - rating
+        - comment
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        comment:
+          type: string
+          minLength: 10
+          maxLength: 1000
+          example: Great product, exactly as described. Fast shipping.
 
     Error:
       type: object

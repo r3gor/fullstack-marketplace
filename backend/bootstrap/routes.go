@@ -19,6 +19,7 @@ func registerRoutes(
 	userService *application.UserService,
 	favoriteService *application.FavoriteService,
 	orderService *application.OrderService,
+	reviewService *application.ReviewService,
 	appLog *logger.AppLogger,
 ) {
 	healthHandler := handler.NewHealthHandler(db)
@@ -27,6 +28,7 @@ func registerRoutes(
 	userHandler := handler.NewUserHandler(userService, appLog)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService, appLog)
 	orderHandler := handler.NewOrderHandler(orderService, appLog)
+	reviewHandler := handler.NewReviewHandler(reviewService, appLog)
 
 	// Docs (public)
 	app.Get("/docs", docsHandler.ScalarUI)
@@ -60,4 +62,7 @@ func registerRoutes(
 	orders.Get("", orderHandler.List)
 	orders.Post("", orderHandler.Create)
 	orders.Get("/:id", orderHandler.Get)
+
+	products := protected.Group("/products")
+	products.Post("/:productId/reviews", reviewHandler.Create)
 }

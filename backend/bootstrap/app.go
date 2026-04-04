@@ -14,6 +14,7 @@ import (
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/bootstrap/config"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/strapi"
 )
 
 func Run() {
@@ -42,6 +43,7 @@ func Run() {
 	refreshTokenRepo := sqlite.NewRefreshTokenRepository(db)
 	favoriteRepo := sqlite.NewFavoriteRepository(db)
 	orderRepo := sqlite.NewOrderRepository(db)
+	reviewSubmissionRepo := sqlite.NewReviewSubmissionRepository(db)
 
 	// Loggers
 	auditLog := logger.NewAuditLogger()
@@ -52,6 +54,9 @@ func Run() {
 	userService := application.NewUserService(userRepo, auditLog)
 	favoriteService := application.NewFavoriteService(favoriteRepo, auditLog)
 	orderService := application.NewOrderService(orderRepo, auditLog)
+
+	strapiClient := strapi.NewClient(cfg.StrapiAPIURL, cfg.StrapiAPIToken)
+	reviewService := application.NewReviewService(orderRepo, reviewSubmissionRepo, strapiClient, auditLog)
 
 	app := fiber.New(fiber.Config{
 		AppName:      "Fullstack E-commerce API",
@@ -69,7 +74,7 @@ func Run() {
 		AllowCredentials: true,
 	}))
 
-	registerRoutes(app, db, cfg, authService, userService, favoriteService, orderService, appLog)
+	registerRoutes(app, db, cfg, authService, userService, favoriteService, orderService, reviewService, appLog)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	log.Printf("server starting on %s (env: %s)", addr, cfg.Env)
