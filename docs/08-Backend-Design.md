@@ -9,7 +9,7 @@
 | Generador SQL | sqlc | SQL puro compilado a Go, sin ORM mágico |
 | Migraciones | golang-migrate | SQL versionado, sin abstracción innecesaria |
 | Auth | JWT en cookies httpOnly | Sin localStorage, CSRF mitigado con SameSite=Lax |
-| Base de datos | PostgreSQL 16 | Prod-ready, transacciones, integridad referencial |
+| Base de datos | SQLite (dev) → MySQL (prod) | Dev sin infraestructura, migración trivial con Repository Pattern |
 | Tests | testify + httptest | Estándar Go |
 
 ---
@@ -73,58 +73,62 @@ backend/
 
 ---
 
-## Schema PostgreSQL
+## Schema SQLite (dev → MySQL prod)
 
 ```sql
--- Usuarios
 CREATE TABLE users (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          VARCHAR(100) NOT NULL,
-  email         VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(60)  NOT NULL,  -- bcrypt
-  created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+  id            TEXT PRIMARY KEY,
+  name          TEXT NOT NULL,
+  email         TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at    DATETIME NOT NULL DEFAULT (datetime('now')),
+  updated_at    DATETIME NOT NULL DEFAULT (datetime('now'))
 );
 
--- Órdenes
+CREATE TABLE refresh_tokens (
+  id         TEXT PRIMARY KEY,
+  user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT UNIQUE NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE orders (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id      UUID REFERENCES users(id) ON DELETE CASCADE,
-  total_amount NUMERIC(10,2) NOT NULL,
-  status       VARCHAR(20) NOT NULL DEFAULT 'pending',
-    -- pending | paid | shipped | delivered | cancelled
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id           TEXT PRIMARY KEY,
+  user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  total_amount REAL NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'pending',
+  created_at   DATETIME NOT NULL DEFAULT (datetime('now')),
+  updated_at   DATETIME NOT NULL DEFAULT (datetime('now'))
 );
 
--- Items de orden
 CREATE TABLE order_items (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id          UUID REFERENCES orders(id) ON DELETE CASCADE,
-  product_id        INTEGER NOT NULL,  -- ID externo de Strapi
+  id                TEXT    PRIMARY KEY,
+  order_id          TEXT    NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id        INTEGER NOT NULL,
   quantity          INTEGER NOT NULL CHECK (quantity > 0),
-  price_at_purchase NUMERIC(10,2) NOT NULL
+  price_at_purchase REAL    NOT NULL
 );
 
--- Favoritos
 CREATE TABLE favorites (
-  user_id    UUID    REFERENCES users(id) ON DELETE CASCADE,
+  user_id    TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   product_id INTEGER NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at DATETIME NOT NULL DEFAULT (datetime('now')),
   PRIMARY KEY (user_id, product_id)
 );
 
--- Control de reseñas (las reseñas viven en Strapi)
 CREATE TABLE review_submissions (
-  user_id          UUID    REFERENCES users(id) ON DELETE CASCADE,
+  user_id          TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   product_id       INTEGER NOT NULL,
-  strapi_review_id VARCHAR(255) NOT NULL,  -- documentId de Strapi
-  submitted_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  PRIMARY KEY (user_id, product_id)  -- garantiza 1 reseña por usuario/producto
+  strapi_review_id TEXT    NOT NULL,
+  submitted_at     DATETIME NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, product_id)
 );
 ```
 
-> **Nota:** No hay tabla `reviews` en PostgreSQL. Las reseñas viven en Strapi para aprovechar el sistema de moderación del admin.
+> **Migración a MySQL:** Solo requiere `infrastructure/mysql/` implementando los mismos ports de `core/port/`. Dominio y application no cambian. Se intercambia el adaptador en `bootstrap/app.go`.
+
+> **Nota:** No hay tabla `reviews`. Las reseñas viven en Strapi.
 
 ---
 
@@ -266,12 +270,12 @@ Respuesta JSON estándar:
 
 ```env
 # backend/.env
-DATABASE_URL=postgres://user:password@localhost:5432/fullstack_ecommerce
+DATABASE_URL=./data/ecommerce.db
 JWT_SECRET=...
 JWT_EXPIRY=15m
 REFRESH_TOKEN_EXPIRY=7d
 STRAPI_API_URL=http://localhost:1337
-STRAPI_API_TOKEN=...  # Full-access token de Strapi
+STRAPI_API_TOKEN=...
 PORT=8080
 ```
 
