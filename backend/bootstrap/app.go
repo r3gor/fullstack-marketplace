@@ -30,6 +30,10 @@ func Run() {
 	}
 	log.Printf("connected to SQLite at %s", cfg.DatabaseURL)
 
+	if err := runMigrations(db); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+	}
+
 	app := fiber.New(fiber.Config{
 		AppName:      "Fullstack E-commerce API",
 		ErrorHandler: errorHandler,
