@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 import type { StrapiPagination } from '@/lib/strapi'
+import { getVisiblePages } from '@/lib/pagination'
 
 interface PaginationProps {
   pagination: StrapiPagination
@@ -27,18 +28,9 @@ export function Pagination({ pagination }: PaginationProps) {
   const start = (page - 1) * pageSize + 1
   const end = Math.min(page * pageSize, total)
 
-  // Build visible page numbers: up to 5, centred on current page
-  const visiblePages: number[] = []
-  const half = 2
-  let from = Math.max(1, page - half)
-  let to = Math.min(pageCount, page + half)
-
-  if (to - from < 4) {
-    if (from === 1) to = Math.min(pageCount, from + 4)
-    else from = Math.max(1, to - 4)
-  }
-
-  for (let i = from; i <= to; i++) visiblePages.push(i)
+  const visiblePages = getVisiblePages(page, pageCount)
+  const firstVisible = visiblePages[0]
+  const lastVisible = visiblePages[visiblePages.length - 1]
 
   const btnBase =
     'inline-flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors'
@@ -61,12 +53,12 @@ export function Pagination({ pagination }: PaginationProps) {
           ←
         </button>
 
-        {from > 1 && (
+        {firstVisible > 1 && (
           <>
             <button onClick={() => goToPage(1)} className={`${btnBase} ${btnIdle}`}>
               1
             </button>
-            {from > 2 && <span className="px-1 text-gray-400">…</span>}
+            {firstVisible > 2 && <span className="px-1 text-gray-400">…</span>}
           </>
         )}
 
@@ -81,9 +73,9 @@ export function Pagination({ pagination }: PaginationProps) {
           </button>
         ))}
 
-        {to < pageCount && (
+        {lastVisible < pageCount && (
           <>
-            {to < pageCount - 1 && <span className="px-1 text-gray-400">…</span>}
+            {lastVisible < pageCount - 1 && <span className="px-1 text-gray-400">…</span>}
             <button onClick={() => goToPage(pageCount)} className={`${btnBase} ${btnIdle}`}>
               {pageCount}
             </button>
