@@ -7,10 +7,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/bootstrap/config"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite"
 )
 
 func Run() {
@@ -34,13 +37,24 @@ func Run() {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
+	// Repositories
+	userRepo := sqlite.NewUserRepository(db)
+	refreshTokenRepo := sqlite.NewRefreshTokenRepository(db)
+
+	// Loggers
+	auditLog := logger.NewAuditLogger()
+	appLog := logger.NewAppLogger()
+
+	// Services
+	authService := application.NewAuthService(userRepo, refreshTokenRepo, auditLog, cfg.RefreshTokenExpiry)
+
 	app := fiber.New(fiber.Config{
 		AppName:      "Fullstack E-commerce API",
 		ErrorHandler: errorHandler,
 	})
 
 	app.Use(recover.New())
-	app.Use(logger.New(logger.Config{
+	app.Use(fiberlogger.New(fiberlogger.Config{
 		Format: "[${time}] ${status} - ${method} ${path} (${latency})\n",
 	}))
 	app.Use(cors.New(cors.Config{
@@ -50,7 +64,7 @@ func Run() {
 		AllowCredentials: true,
 	}))
 
-	registerRoutes(app, db, cfg)
+	registerRoutes(app, db, cfg, authService, appLog)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	log.Printf("server starting on %s (env: %s)", addr, cfg.Env)
