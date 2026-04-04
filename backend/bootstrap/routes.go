@@ -10,6 +10,11 @@ import (
 
 func registerRoutes(app *fiber.App, db *sql.DB, cfg *config.Config) {
 	healthHandler := handler.NewHealthHandler(db)
+	docsHandler := handler.NewDocsHandler("./docs/openapi.yaml")
+
+	// API docs (no auth required)
+	app.Get("/docs", docsHandler.ScalarUI)
+	app.Get("/docs/openapi.yaml", docsHandler.Spec)
 
 	api := app.Group("/api/v1")
 	api.Get("/health", healthHandler.Check)

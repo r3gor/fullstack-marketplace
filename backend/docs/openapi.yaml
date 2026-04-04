@@ -1,0 +1,171 @@
+openapi: 3.1.0
+
+info:
+  title: Fullstack E-commerce API
+  description: |
+    REST API for the Fullstack E-commerce learning project.
+
+    ## Authentication
+    Uses JWT stored in **httpOnly cookies**. After login, the access token is set
+    automatically — no need to manually set Authorization headers in the browser.
+    For Postman/Insomnia, enable "Send cookies" or copy the token manually.
+
+    ## Error format
+    All errors follow a consistent shape:
+    ```json
+    { "error": "error_code", "message": "Human-readable description" }
+    ```
+  version: 0.1.0
+  contact:
+    name: Roger Ramos
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+
+tags:
+  - name: Health
+    description: Service health check
+  - name: Auth
+    description: Register, login, logout and token refresh
+  - name: Users
+    description: Authenticated user profile
+  - name: Favorites
+    description: User product favorites
+  - name: Orders
+    description: Orders and checkout
+  - name: Reviews
+    description: Product reviews (validated by backend, stored in Strapi)
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      description: Returns the service status and verifies database connectivity.
+      tags:
+        - Health
+      security: []
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: ok
+                service: fullstack-ecommerce-api
+        "503":
+          description: Service unavailable (database unreachable)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: service_unavailable
+                message: database unreachable
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - service
+      properties:
+        status:
+          type: string
+          enum: [ok, unhealthy]
+        service:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code (snake_case)
+          examples:
+            - validation_error
+            - unauthorized
+            - not_found
+            - conflict
+            - internal_server_error
+        message:
+          type: string
+          description: Human-readable error description
+
+  responses:
+    BadRequest:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: validation_error
+            message: Rating must be between 1 and 5
+
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: unauthorized
+            message: Authentication required
+
+    Forbidden:
+      description: Authenticated but not allowed to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: forbidden
+            message: Access denied
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: not_found
+            message: Resource not found
+
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: conflict
+            message: Email already in use
+
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: internal_server_error
+            message: An unexpected error occurred
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: JWT access token set as httpOnly cookie after login
+
+security:
+  - cookieAuth: []
