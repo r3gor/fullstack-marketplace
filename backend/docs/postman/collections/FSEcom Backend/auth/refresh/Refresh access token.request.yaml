@@ -1,0 +1,15 @@
+$kind: http-request
+description: >
+  Rotates the refresh token (old one is invalidated) and issues a new access
+  token.
+
+  Requires the `refresh_token` httpOnly cookie to be present.
+url: "{{baseUrl}}/auth/refresh"
+method: POST
+headers:
+  Accept: application/json
+body:
+  type: text
+  content: ""
+examples: ./.resources/Refresh access token.resources/examples
+order: 1000

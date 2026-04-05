@@ -12,6 +12,7 @@ func init() {
 		OrderCodes,
 		ReviewCodes,
 		FavoriteCodes,
+		requestCodes,
 	}
 	statusMap = make(map[string]int)
 	for _, m := range sources {

@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/products/:productId/reviews"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: access_token
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  pathVariables:
+    productId: "8462"
+  body:
+    type: json
+    content: |-
+      {
+        "rating": 4,
+        "comment": "Great product, exactly as described. Fast shipping."
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "review submitted and pending moderation"
+      }
+order: 1000

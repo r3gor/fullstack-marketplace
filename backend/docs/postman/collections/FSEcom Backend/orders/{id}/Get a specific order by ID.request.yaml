@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/orders/:id"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  id: f9725d57-aed0-e563-ef59-b7c503ef0a0a
+body:
+  type: text
+  content: ""
+examples: ./.resources/Get a specific order by ID.resources/examples
+order: 1000

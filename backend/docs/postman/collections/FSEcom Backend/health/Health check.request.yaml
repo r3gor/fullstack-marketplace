@@ -1,0 +1,11 @@
+$kind: http-request
+description: Returns the service status and verifies database connectivity.
+url: "{{baseUrl}}/health"
+method: GET
+headers:
+  Accept: application/json
+body:
+  type: text
+  content: ""
+examples: ./.resources/Health check.resources/examples
+order: 1000

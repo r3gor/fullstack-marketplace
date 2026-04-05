@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application/dto"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/port"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
@@ -36,7 +37,7 @@ func (h *OrderHandler) Create(c *fiber.Ctx) error {
 
 	var req dto.CreateOrderRequest
 	if err := c.BodyParser(&req); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
+		return domain.ErrInvalidRequestBody()
 	}
 
 	order, err := h.orderService.CreateOrder(c.UserContext(), userID, req)

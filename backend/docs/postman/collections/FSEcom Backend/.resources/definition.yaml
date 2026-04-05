@@ -1,0 +1,29 @@
+$kind: collection
+name: FSEcom Backend
+description: |-
+  REST API for the Fullstack E-commerce learning project.
+
+  ## Authentication
+  Uses JWT stored in **httpOnly cookies**. After login, the access token is set
+  automatically — no need to manually set Authorization headers in the browser.
+  For Postman/Insomnia, enable "Send cookies" or copy the token manually.
+
+  ## Error format
+  All errors follow a consistent shape:
+  ```json
+  { "error": "error_code", "message": "Human-readable description" }
+  ```
+
+
+  Contact Support:
+   Name: Roger Ramos
+variables:
+  baseUrl: http://localhost:8080/api/v1
+auth:
+  - id: 8aa07efa-9542-4eb1-ab04-4a33190933e5
+    type: apikey
+    name: apikey auth
+    credentials:
+      key: access_token
+      value: "{{apiKey}}"
+      in: header

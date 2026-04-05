@@ -1,0 +1,64 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/orders"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: access_token
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "id": "5010be08-e0a8-4cd4-806f-e8b7f045f026",
+          "total_amount": 109.97,
+          "status": "pending",
+          "items": [
+            {
+              "id": "71797c04-d541-ae9b-6252-1640075e5224",
+              "product_id": 9761,
+              "quantity": 8343,
+              "price_at_purchase": 4364.889108057095
+            },
+            {
+              "id": "d6706753-9efc-a5e9-f45b-c40b39f503b3",
+              "product_id": 8407,
+              "quantity": 746,
+              "price_at_purchase": 426.57614591760984
+            }
+          ],
+          "created_at": "1986-06-16T20:28:36.805Z"
+        },
+        {
+          "id": "5010be08-e0a8-4cd4-806f-e8b7f045f026",
+          "total_amount": 109.97,
+          "status": "pending",
+          "items": [
+            {
+              "id": "c2f5b132-e72e-31d0-bb6f-4e9a44908a82",
+              "product_id": 4447,
+              "quantity": 1272,
+              "price_at_purchase": 3468.8312686538625
+            },
+            {
+              "id": "740bd67e-d21a-7d27-c90a-dbd5c77c8fe7",
+              "product_id": 8245,
+              "quantity": 6623,
+              "price_at_purchase": 6873.808736781754
+            }
+          ],
+          "created_at": "2008-12-18T10:16:46.880Z"
+        }
+      ]
+order: 1000

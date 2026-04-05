@@ -1,0 +1,11 @@
+$kind: http-request
+description: Invalidates the refresh token in the database and clears both auth cookies.
+url: "{{baseUrl}}/auth/logout"
+method: POST
+headers:
+  Accept: application/json
+body:
+  type: text
+  content: ""
+examples: ./.resources/Logout and clear auth cookies.resources/examples
+order: 1000

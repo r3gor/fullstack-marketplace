@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/users/me"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Roger Updated",
+      "email": "roger@example.com"
+    }
+examples: ./.resources/Update authenticated user profile.resources/examples
+order: 2000

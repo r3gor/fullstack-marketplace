@@ -1,0 +1,42 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/orders"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: access_token
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  body:
+    type: json
+    content: |-
+      {
+        "items": [
+          {
+            "product_id": 5,
+            "quantity": 2,
+            "price_at_purchase": 29.99
+          },
+          {
+            "product_id": 12,
+            "quantity": 1,
+            "price_at_purchase": 49.99
+          }
+        ]
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "error": "unauthorized",
+        "message": "Authentication required"
+      }
+order: 3000

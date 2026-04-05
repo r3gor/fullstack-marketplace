@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/favorites/:productId"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  productId: "8462"
+body:
+  type: text
+  content: ""
+examples: ./.resources/Remove product from favorites.resources/examples
+order: 2000

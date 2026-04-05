@@ -8,6 +8,7 @@ import (
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application/dto"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/bootstrap/config"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 )
@@ -26,7 +27,7 @@ func NewAuthHandler(authService *application.AuthService, cfg *config.Config, lo
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
+		return domain.ErrInvalidRequestBody()
 	}
 
 	user, err := h.authService.Register(c.UserContext(), req)
@@ -45,7 +46,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
+		return domain.ErrInvalidRequestBody()
 	}
 
 	user, refreshToken, err := h.authService.Login(c.UserContext(), req)
@@ -56,7 +57,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	accessToken, err := h.generateAccessToken(user.ID)
 	if err != nil {
 		h.log.Error("failed to generate access token", "error", err, "user_id", user.ID, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to generate token")
+		return domain.NewInternalError(err)
 	}
 
 	h.setAuthCookies(c, accessToken, refreshToken)
@@ -93,7 +94,7 @@ func (h *AuthHandler) Refresh(c *fiber.Ctx) error {
 	accessToken, err := h.generateAccessToken(user.ID)
 	if err != nil {
 		h.log.Error("failed to generate access token on refresh", "error", err, "user_id", user.ID, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to generate token")
+		return domain.NewInternalError(err)
 	}
 
 	h.setAuthCookies(c, accessToken, newRefreshToken)

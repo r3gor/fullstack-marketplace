@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 )
 
 type DocsHandler struct {
@@ -40,7 +41,7 @@ func (h *DocsHandler) ScalarUI(c *fiber.Ctx) error {
 func (h *DocsHandler) Spec(c *fiber.Ctx) error {
 	data, err := os.ReadFile(h.specPath)
 	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, "spec file not found")
+		return domain.NewInternalError(err)
 	}
 	c.Set(fiber.HeaderContentType, "application/yaml")
 	return c.Send(data)

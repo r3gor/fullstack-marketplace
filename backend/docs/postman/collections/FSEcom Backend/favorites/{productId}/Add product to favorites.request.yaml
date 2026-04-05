@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/favorites/:productId"
+method: POST
+headers:
+  Accept: application/json
+pathVariables:
+  productId: "8462"
+body:
+  type: text
+  content: ""
+examples: ./.resources/Add product to favorites.resources/examples
+order: 1000
