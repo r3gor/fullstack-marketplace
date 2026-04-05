@@ -34,7 +34,7 @@ func (r *UserRepository) Create(ctx context.Context, user domain.User) (domain.U
 				"constraint", "UNIQUE", "field", "email",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return domain.User{}, domain.NewConflictError("email already in use")
+			return domain.User{}, domain.ErrEmailAlreadyInUse()
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "create_user", "table", "users",
