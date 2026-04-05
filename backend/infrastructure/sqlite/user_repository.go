@@ -54,7 +54,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (domain.U
 				"constraint", "NOT_FOUND",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return domain.User{}, domain.NewNotFoundError("user")
+			return domain.User{}, domain.ErrUserNotFound()
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "get_user_by_email", "table", "users",
@@ -74,7 +74,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (domain.User, e
 				"constraint", "NOT_FOUND",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return domain.User{}, domain.NewNotFoundError("user")
+			return domain.User{}, domain.ErrUserNotFound()
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "get_user_by_id", "table", "users",
@@ -98,7 +98,7 @@ func (r *UserRepository) Update(ctx context.Context, id, name, email string) (do
 				"constraint", "NOT_FOUND",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return domain.User{}, domain.NewNotFoundError("user")
+			return domain.User{}, domain.ErrUserNotFound()
 		}
 		if isUniqueConstraint(err) {
 			r.log.Warn("domain_constraint",
@@ -106,7 +106,7 @@ func (r *UserRepository) Update(ctx context.Context, id, name, email string) (do
 				"constraint", "UNIQUE", "field", "email",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return domain.User{}, domain.NewConflictError("email already in use")
+			return domain.User{}, domain.ErrEmailAlreadyInUse()
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "update_user", "table", "users",

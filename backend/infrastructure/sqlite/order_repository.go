@@ -105,7 +105,7 @@ func (r *OrderRepository) GetByIDAndUserID(ctx context.Context, orderID, userID 
 				"constraint", "NOT_FOUND",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return port.Order{}, domain.NewNotFoundError("order")
+			return port.Order{}, domain.ErrOrderNotFound()
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "get_order_by_id", "table", "orders",

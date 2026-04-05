@@ -34,14 +34,14 @@ func NewReviewService(
 
 func (s *ReviewService) SubmitReview(ctx context.Context, userID string, productID int64, req dto.CreateReviewRequest) error {
 	if req.Rating < 1 || req.Rating > 5 {
-		return domain.NewValidationError("rating must be between 1 and 5")
+		return domain.ErrInvalidRating(1, 5)
 	}
 	req.Comment = strings.TrimSpace(req.Comment)
 	if len(req.Comment) < 10 {
-		return domain.NewValidationError("comment must be at least 10 characters")
+		return domain.ErrCommentTooShort(10)
 	}
 	if len(req.Comment) > 1000 {
-		return domain.NewValidationError("comment must be at most 1000 characters")
+		return domain.ErrCommentTooLong(1000)
 	}
 
 	// Must have purchased the product
@@ -50,7 +50,7 @@ func (s *ReviewService) SubmitReview(ctx context.Context, userID string, product
 		return fmt.Errorf("failed to check purchase history: %w", err)
 	}
 	if !purchased {
-		return domain.NewValidationError("you must purchase this product before leaving a review")
+		return domain.ErrProductNotPurchased()
 	}
 
 	// No duplicate reviews
@@ -59,7 +59,7 @@ func (s *ReviewService) SubmitReview(ctx context.Context, userID string, product
 		return fmt.Errorf("failed to check existing review: %w", err)
 	}
 	if exists {
-		return domain.NewConflictError("you have already reviewed this product")
+		return domain.ErrReviewAlreadySubmitted()
 	}
 
 	// Create review in Strapi with status "pending"

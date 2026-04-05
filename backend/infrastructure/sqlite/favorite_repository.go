@@ -32,7 +32,7 @@ func (r *FavoriteRepository) Add(ctx context.Context, userID string, productID i
 				"constraint", "UNIQUE",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return domain.NewConflictError("product is already in favorites")
+			return domain.ErrAlreadyFavorite()
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "add_favorite", "table", "favorites",

@@ -45,7 +45,7 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) (do
 		return domain.User{}, err
 	}
 	if len(req.Password) < 8 {
-		return domain.User{}, domain.NewValidationError("password must be at least 8 characters")
+		return domain.User{}, domain.ErrPasswordTooShort(8)
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -80,11 +80,11 @@ func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (domain.U
 	user, err := s.users.GetByEmail(ctx, email)
 	if err != nil {
 		// Always return the same message to avoid user enumeration
-		return domain.User{}, "", domain.NewUnauthorizedError("invalid email or password")
+		return domain.User{}, "", domain.ErrInvalidCredentials()
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		return domain.User{}, "", domain.NewUnauthorizedError("invalid email or password")
+		return domain.User{}, "", domain.ErrInvalidCredentials()
 	}
 
 	refreshToken, err := s.createRefreshToken(ctx, user.ID)
@@ -118,14 +118,14 @@ func (s *AuthService) Logout(ctx context.Context, rawRefreshToken, userID string
 
 func (s *AuthService) Refresh(ctx context.Context, rawToken string) (domain.User, string, error) {
 	if rawToken == "" {
-		return domain.User{}, "", domain.NewUnauthorizedError("refresh token required")
+		return domain.User{}, "", domain.ErrRefreshTokenRequired()
 	}
 
 	hash := HashToken(rawToken)
 
 	stored, err := s.tokens.GetByHash(ctx, hash)
 	if err != nil {
-		return domain.User{}, "", domain.NewUnauthorizedError("invalid or expired refresh token")
+		return domain.User{}, "", domain.ErrInvalidRefreshToken()
 	}
 
 	// Rotate: delete old token before issuing new one

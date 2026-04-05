@@ -52,7 +52,7 @@ func (r *RefreshTokenRepository) GetByHash(ctx context.Context, tokenHash string
 				"constraint", "NOT_FOUND",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return port.RefreshToken{}, domain.NewNotFoundError("refresh_token")
+			return port.RefreshToken{}, domain.ErrInvalidRefreshToken()
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "get_refresh_token", "table", "refresh_tokens",

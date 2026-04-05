@@ -22,10 +22,10 @@ func ValidateUserInput(name, email string) error {
 	email = strings.TrimSpace(email)
 
 	if len(name) < 2 || len(name) > 100 {
-		return NewValidationError("name must be between 2 and 100 characters")
+		return ErrInvalidName(2, 100)
 	}
 	if !emailRegex.MatchString(email) {
-		return NewValidationError("invalid email address")
+		return ErrInvalidEmail()
 	}
 	return nil
 }
