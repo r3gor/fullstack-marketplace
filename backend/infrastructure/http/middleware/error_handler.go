@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/httperrors"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 )
 
@@ -18,13 +19,14 @@ func ErrorHandler(log *logger.AppLogger) fiber.ErrorHandler {
 
 		var appErr *domain.AppError
 		if errors.As(err, &appErr) {
-			if appErr.Code == domain.ErrCodeInternal {
+			status := httperrors.StatusFor(appErr.Code)
+			if status >= 500 {
 				log.Error("unexpected_error",
 					"correlation_id", correlationID,
 					"error", appErr.Err,
 				)
 			}
-			return c.Status(statusForCode(appErr.Code)).JSON(fiber.Map{
+			return c.Status(status).JSON(fiber.Map{
 				"error":   appErr.Code,
 				"message": appErr.Message,
 			})
@@ -53,22 +55,6 @@ func ErrorHandler(log *logger.AppLogger) fiber.ErrorHandler {
 			"error":   "internal_server_error",
 			"message": "an unexpected error occurred",
 		})
-	}
-}
-
-// statusForCode maps an AppError Code constant to its HTTP status code.
-func statusForCode(code string) int {
-	switch code {
-	case domain.ErrCodeValidation:
-		return fiber.StatusBadRequest
-	case domain.ErrCodeNotFound:
-		return fiber.StatusNotFound
-	case domain.ErrCodeConflict:
-		return fiber.StatusConflict
-	case domain.ErrCodeUnauthorized:
-		return fiber.StatusUnauthorized
-	default:
-		return fiber.StatusInternalServerError
 	}
 }
 

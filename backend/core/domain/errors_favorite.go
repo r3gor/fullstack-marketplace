@@ -3,5 +3,5 @@ package domain
 // Favorites domain errors.
 
 func ErrAlreadyFavorite() *AppError {
-	return NewConflictError("product is already in favorites")
+	return &AppError{Code: "favorite.already_added", Message: "product is already in favorites"}
 }
