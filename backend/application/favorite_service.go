@@ -2,12 +2,9 @@ package application
 
 import (
 	"context"
-	"errors"
 	"strconv"
 
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/port"
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite"
 )
 
 type FavoriteService struct {
@@ -24,12 +21,7 @@ func (s *FavoriteService) List(ctx context.Context, userID string) ([]port.Favor
 }
 
 func (s *FavoriteService) Add(ctx context.Context, userID string, productID int64) error {
-	err := s.favorites.Add(ctx, userID, productID)
-	if err != nil {
-		var alreadyErr *sqlite.AlreadyFavoriteError
-		if errors.As(err, &alreadyErr) {
-			return &domain.ConflictError{Message: "product is already in favorites"}
-		}
+	if err := s.favorites.Add(ctx, userID, productID); err != nil {
 		return err
 	}
 

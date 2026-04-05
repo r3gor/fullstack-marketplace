@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite/sqlcdb"
@@ -29,7 +29,7 @@ func (r *ReviewSubmissionRepository) Create(ctx context.Context, userID string, 
 			"layer", "sqlite", "operation", "create_review_submission", "table", "review_submissions",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return &infrastructure.InfraError{Layer: "sqlite", Operation: "create_review_submission", Resource: "review_submissions", Cause: err}
+		return domain.NewInternalError(err)
 	}
 	return nil
 }
@@ -44,7 +44,9 @@ func (r *ReviewSubmissionRepository) Exists(ctx context.Context, userID string, 
 			"layer", "sqlite", "operation", "exists_review_submission", "table", "review_submissions",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return false, &infrastructure.InfraError{Layer: "sqlite", Operation: "exists_review_submission", Resource: "review_submissions", Cause: err}
+		return false, domain.NewInternalError(err)
 	}
 	return count > 0, nil
 }
+
+

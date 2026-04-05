@@ -3,10 +3,9 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"time"
 
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/port"
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite/sqlcdb"
@@ -33,13 +32,13 @@ func (r *FavoriteRepository) Add(ctx context.Context, userID string, productID i
 				"constraint", "UNIQUE",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return &AlreadyFavoriteError{}
+			return domain.NewConflictError("product is already in favorites")
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "add_favorite", "table", "favorites",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return &infrastructure.InfraError{Layer: "sqlite", Operation: "add_favorite", Resource: "favorites", Cause: err}
+		return domain.NewInternalError(err)
 	}
 	return nil
 }
@@ -53,7 +52,7 @@ func (r *FavoriteRepository) Remove(ctx context.Context, userID string, productI
 			"layer", "sqlite", "operation", "remove_favorite", "table", "favorites",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return &infrastructure.InfraError{Layer: "sqlite", Operation: "remove_favorite", Resource: "favorites", Cause: err}
+		return domain.NewInternalError(err)
 	}
 	return nil
 }
@@ -65,7 +64,7 @@ func (r *FavoriteRepository) List(ctx context.Context, userID string) ([]port.Fa
 			"layer", "sqlite", "operation", "list_favorites", "table", "favorites",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return nil, &infrastructure.InfraError{Layer: "sqlite", Operation: "list_favorites", Resource: "favorites", Cause: err}
+		return nil, domain.NewInternalError(err)
 	}
 
 	favorites := make([]port.Favorite, 0, len(rows))
@@ -89,14 +88,8 @@ func (r *FavoriteRepository) IsFavorite(ctx context.Context, userID string, prod
 			"layer", "sqlite", "operation", "is_favorite", "table", "favorites",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return false, &infrastructure.InfraError{Layer: "sqlite", Operation: "is_favorite", Resource: "favorites", Cause: err}
+		return false, domain.NewInternalError(err)
 	}
 	return count > 0, nil
 }
 
-type AlreadyFavoriteError struct{}
-
-func (e *AlreadyFavoriteError) Error() string { return "product is already in favorites" }
-
-// keep time import
-var _ = time.Now

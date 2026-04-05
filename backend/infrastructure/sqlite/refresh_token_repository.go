@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/port"
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite/sqlcdb"
@@ -32,7 +32,7 @@ func (r *RefreshTokenRepository) Create(ctx context.Context, token port.RefreshT
 			"layer", "sqlite", "operation", "create_refresh_token", "table", "refresh_tokens",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return port.RefreshToken{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "create_refresh_token", Resource: "refresh_tokens", Cause: err}
+		return port.RefreshToken{}, domain.NewInternalError(err)
 	}
 	return port.RefreshToken{
 		ID:        row.ID,
@@ -52,13 +52,13 @@ func (r *RefreshTokenRepository) GetByHash(ctx context.Context, tokenHash string
 				"constraint", "NOT_FOUND",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return port.RefreshToken{}, &NotFoundTokenError{}
+			return port.RefreshToken{}, domain.NewNotFoundError("refresh_token")
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "get_refresh_token", "table", "refresh_tokens",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return port.RefreshToken{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "get_refresh_token", Resource: "refresh_tokens", Cause: err}
+		return port.RefreshToken{}, domain.NewInternalError(err)
 	}
 	return port.RefreshToken{
 		ID:        row.ID,
@@ -75,7 +75,7 @@ func (r *RefreshTokenRepository) DeleteByHash(ctx context.Context, tokenHash str
 			"layer", "sqlite", "operation", "delete_refresh_token", "table", "refresh_tokens",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return &infrastructure.InfraError{Layer: "sqlite", Operation: "delete_refresh_token", Resource: "refresh_tokens", Cause: err}
+		return domain.NewInternalError(err)
 	}
 	return nil
 }
@@ -86,12 +86,8 @@ func (r *RefreshTokenRepository) DeleteByUserID(ctx context.Context, userID stri
 			"layer", "sqlite", "operation", "delete_user_refresh_tokens", "table", "refresh_tokens",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return &infrastructure.InfraError{Layer: "sqlite", Operation: "delete_user_refresh_tokens", Resource: "refresh_tokens", Cause: err}
+		return domain.NewInternalError(err)
 	}
 	return nil
 }
 
-// NotFoundTokenError signals a missing/expired refresh token.
-type NotFoundTokenError struct{}
-
-func (e *NotFoundTokenError) Error() string { return "refresh token not found or expired" }

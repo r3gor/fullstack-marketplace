@@ -5,8 +5,8 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/port"
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite/sqlcdb"
@@ -29,7 +29,7 @@ func (r *OrderRepository) Create(ctx context.Context, order port.Order) (port.Or
 			"layer", "sqlite", "operation", "begin_tx", "table", "orders",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return port.Order{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "begin_tx", Resource: "orders", Cause: err}
+		return port.Order{}, domain.NewInternalError(err)
 	}
 	defer tx.Rollback() //nolint:errcheck
 
@@ -46,7 +46,7 @@ func (r *OrderRepository) Create(ctx context.Context, order port.Order) (port.Or
 			"layer", "sqlite", "operation", "create_order", "table", "orders",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return port.Order{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "create_order", Resource: "orders", Cause: err}
+		return port.Order{}, domain.NewInternalError(err)
 	}
 
 	items := make([]port.OrderItem, 0, len(order.Items))
@@ -63,7 +63,7 @@ func (r *OrderRepository) Create(ctx context.Context, order port.Order) (port.Or
 				"layer", "sqlite", "operation", "create_order_item", "table", "order_items",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 			)
-			return port.Order{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "create_order_item", Resource: "order_items", Cause: err}
+			return port.Order{}, domain.NewInternalError(err)
 		}
 		items = append(items, port.OrderItem{
 			ID:              createdItem.ID,
@@ -79,7 +79,7 @@ func (r *OrderRepository) Create(ctx context.Context, order port.Order) (port.Or
 			"layer", "sqlite", "operation", "commit_tx", "table", "orders",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return port.Order{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "commit_tx", Resource: "orders", Cause: err}
+		return port.Order{}, domain.NewInternalError(err)
 	}
 
 	return port.Order{
@@ -105,13 +105,13 @@ func (r *OrderRepository) GetByIDAndUserID(ctx context.Context, orderID, userID 
 				"constraint", "NOT_FOUND",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 			)
-			return port.Order{}, &NotFoundOrderError{}
+			return port.Order{}, domain.NewNotFoundError("order")
 		}
 		r.log.Error("db_error",
 			"layer", "sqlite", "operation", "get_order_by_id", "table", "orders",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return port.Order{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "get_order_by_id", Resource: "orders", Cause: err}
+		return port.Order{}, domain.NewInternalError(err)
 	}
 
 	items, err := r.q.ListOrderItemsByOrderID(ctx, row.ID)
@@ -120,7 +120,7 @@ func (r *OrderRepository) GetByIDAndUserID(ctx context.Context, orderID, userID 
 			"layer", "sqlite", "operation", "list_order_items", "table", "order_items",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return port.Order{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "list_order_items", Resource: "order_items", Cause: err}
+		return port.Order{}, domain.NewInternalError(err)
 	}
 
 	return toPortOrder(row, items), nil
@@ -133,7 +133,7 @@ func (r *OrderRepository) ListByUserID(ctx context.Context, userID string) ([]po
 			"layer", "sqlite", "operation", "list_orders", "table", "orders",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return nil, &infrastructure.InfraError{Layer: "sqlite", Operation: "list_orders", Resource: "orders", Cause: err}
+		return nil, domain.NewInternalError(err)
 	}
 
 	orders := make([]port.Order, 0, len(rows))
@@ -144,7 +144,7 @@ func (r *OrderRepository) ListByUserID(ctx context.Context, userID string) ([]po
 				"layer", "sqlite", "operation", "list_order_items", "table", "order_items",
 				"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 			)
-			return nil, &infrastructure.InfraError{Layer: "sqlite", Operation: "list_order_items", Resource: "order_items", Cause: err}
+			return nil, domain.NewInternalError(err)
 		}
 		orders = append(orders, toPortOrder(row, items))
 	}
@@ -161,7 +161,7 @@ func (r *OrderRepository) UserHasPurchasedProduct(ctx context.Context, userID st
 			"layer", "sqlite", "operation", "check_purchase", "table", "order_items",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return false, &infrastructure.InfraError{Layer: "sqlite", Operation: "check_purchase", Resource: "order_items", Cause: err}
+		return false, domain.NewInternalError(err)
 	}
 	return count > 0, nil
 }
@@ -187,7 +187,3 @@ func toPortOrder(row sqlcdb.Order, items []sqlcdb.OrderItem) port.Order {
 		UpdatedAt:   row.UpdatedAt,
 	}
 }
-
-type NotFoundOrderError struct{}
-
-func (e *NotFoundOrderError) Error() string { return "order not found" }

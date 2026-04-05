@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 )
@@ -60,7 +61,7 @@ func (c *Client) CreateReview(ctx context.Context, input CreateReviewInput) (str
 			"layer", "strapi", "operation", "create_review", "url", url,
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return "", fmt.Errorf("failed to marshal review payload: %w", err)
+		return "", domain.NewInternalError(fmt.Errorf("failed to marshal review payload: %w", err))
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
@@ -69,7 +70,7 @@ func (c *Client) CreateReview(ctx context.Context, input CreateReviewInput) (str
 			"layer", "strapi", "operation", "create_review", "url", url,
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return "", fmt.Errorf("failed to build request: %w", err)
+		return "", domain.NewInternalError(fmt.Errorf("failed to build request: %w", err))
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -81,7 +82,7 @@ func (c *Client) CreateReview(ctx context.Context, input CreateReviewInput) (str
 			"layer", "strapi", "operation", "create_review", "url", url, "method", "POST",
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return "", fmt.Errorf("failed to call Strapi: %w", err)
+		return "", domain.NewInternalError(fmt.Errorf("failed to call Strapi: %w", err))
 	}
 	defer resp.Body.Close()
 
@@ -91,7 +92,7 @@ func (c *Client) CreateReview(ctx context.Context, input CreateReviewInput) (str
 			"method", "POST", "status_code", resp.StatusCode,
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx),
 		)
-		return "", fmt.Errorf("strapi returned status %d", resp.StatusCode)
+		return "", domain.NewInternalError(fmt.Errorf("strapi returned status %d", resp.StatusCode))
 	}
 
 	var result reviewResponse
@@ -100,7 +101,7 @@ func (c *Client) CreateReview(ctx context.Context, input CreateReviewInput) (str
 			"layer", "strapi", "operation", "create_review", "url", url,
 			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
 		)
-		return "", fmt.Errorf("failed to decode Strapi response: %w", err)
+		return "", domain.NewInternalError(fmt.Errorf("failed to decode Strapi response: %w", err))
 	}
 
 	return result.Data.DocumentID, nil

@@ -21,7 +21,7 @@ func NewOrderService(orders port.OrderRepository, audit port.AuditLogger) *Order
 
 func (s *OrderService) CreateOrder(ctx context.Context, userID string, req dto.CreateOrderRequest) (port.Order, error) {
 	if len(req.Items) == 0 {
-		return port.Order{}, &domain.ValidationError{Message: "order must contain at least one item"}
+		return port.Order{}, domain.NewValidationError("order must contain at least one item")
 	}
 
 	var total float64
@@ -29,14 +29,10 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID string, req dto.C
 
 	for i, item := range req.Items {
 		if item.Quantity <= 0 {
-			return port.Order{}, &domain.ValidationError{
-				Message: fmt.Sprintf("item %d: quantity must be greater than 0", i+1),
-			}
+			return port.Order{}, domain.NewValidationError(fmt.Sprintf("item %d: quantity must be greater than 0", i+1))
 		}
 		if item.PriceAtPurchase <= 0 {
-			return port.Order{}, &domain.ValidationError{
-				Message: fmt.Sprintf("item %d: price must be greater than 0", i+1),
-			}
+			return port.Order{}, domain.NewValidationError(fmt.Sprintf("item %d: price must be greater than 0", i+1))
 		}
 		total += float64(item.Quantity) * item.PriceAtPurchase
 		items = append(items, port.OrderItem{
@@ -75,7 +71,7 @@ func (s *OrderService) ListOrders(ctx context.Context, userID string) ([]port.Or
 func (s *OrderService) GetOrder(ctx context.Context, userID, orderID string) (port.Order, error) {
 	order, err := s.orders.GetByIDAndUserID(ctx, orderID, userID)
 	if err != nil {
-		return port.Order{}, &domain.NotFoundError{Resource: "order"}
+		return port.Order{}, err
 	}
 	return order, nil
 }

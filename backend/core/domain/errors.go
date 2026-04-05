@@ -2,22 +2,46 @@ package domain
 
 import "fmt"
 
-// ValidationError is returned when input data is invalid.
-type ValidationError struct{ Message string }
+// AppError is the single error type used across the entire application.
+// All domain and infrastructure errors are expressed as *AppError with a specific Code.
+// The ErrorHandler reads Code to produce the HTTP response without needing
+// per-type assertions.
+type AppError struct {
+	Code    string // one of the ErrCode* constants
+	Message string // human-readable message sent to the client
+	Err     error  // underlying cause (non-nil for internal/infra errors)
+}
 
-func (e *ValidationError) Error() string { return e.Message }
+func (e *AppError) Error() string { return e.Message }
+func (e *AppError) Unwrap() error { return e.Err }
 
-// NotFoundError is returned when a requested resource does not exist.
-type NotFoundError struct{ Resource string }
+// Error code constants — used by ErrorHandler to map to HTTP status codes.
+const (
+	ErrCodeValidation   = "validation_error"
+	ErrCodeNotFound     = "not_found"
+	ErrCodeConflict     = "conflict"
+	ErrCodeUnauthorized = "unauthorized"
+	ErrCodeInternal     = "internal_server_error"
+)
 
-func (e *NotFoundError) Error() string { return fmt.Sprintf("%s not found", e.Resource) }
+func NewValidationError(message string) *AppError {
+	return &AppError{Code: ErrCodeValidation, Message: message}
+}
 
-// ConflictError is returned when a resource already exists.
-type ConflictError struct{ Message string }
+func NewNotFoundError(resource string) *AppError {
+	return &AppError{Code: ErrCodeNotFound, Message: fmt.Sprintf("%s not found", resource)}
+}
 
-func (e *ConflictError) Error() string { return e.Message }
+func NewConflictError(message string) *AppError {
+	return &AppError{Code: ErrCodeConflict, Message: message}
+}
 
-// UnauthorizedError is returned when credentials are missing or invalid.
-type UnauthorizedError struct{ Message string }
+func NewUnauthorizedError(message string) *AppError {
+	return &AppError{Code: ErrCodeUnauthorized, Message: message}
+}
 
-func (e *UnauthorizedError) Error() string { return e.Message }
+// NewInternalError wraps an unexpected infrastructure or technical failure.
+// The cause is preserved in Err so ErrorHandler can log it.
+func NewInternalError(cause error) *AppError {
+	return &AppError{Code: ErrCodeInternal, Message: "an unexpected error occurred", Err: cause}
+}

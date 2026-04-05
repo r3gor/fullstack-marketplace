@@ -45,7 +45,7 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) (do
 		return domain.User{}, err
 	}
 	if len(req.Password) < 8 {
-		return domain.User{}, &domain.ValidationError{Message: "password must be at least 8 characters"}
+		return domain.User{}, domain.NewValidationError("password must be at least 8 characters")
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -80,11 +80,11 @@ func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (domain.U
 	user, err := s.users.GetByEmail(ctx, email)
 	if err != nil {
 		// Always return the same message to avoid user enumeration
-		return domain.User{}, "", &domain.UnauthorizedError{Message: "invalid email or password"}
+		return domain.User{}, "", domain.NewUnauthorizedError("invalid email or password")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		return domain.User{}, "", &domain.UnauthorizedError{Message: "invalid email or password"}
+		return domain.User{}, "", domain.NewUnauthorizedError("invalid email or password")
 	}
 
 	refreshToken, err := s.createRefreshToken(ctx, user.ID)
@@ -118,14 +118,14 @@ func (s *AuthService) Logout(ctx context.Context, rawRefreshToken, userID string
 
 func (s *AuthService) Refresh(ctx context.Context, rawToken string) (domain.User, string, error) {
 	if rawToken == "" {
-		return domain.User{}, "", &domain.UnauthorizedError{Message: "refresh token required"}
+		return domain.User{}, "", domain.NewUnauthorizedError("refresh token required")
 	}
 
 	hash := HashToken(rawToken)
 
 	stored, err := s.tokens.GetByHash(ctx, hash)
 	if err != nil {
-		return domain.User{}, "", &domain.UnauthorizedError{Message: "invalid or expired refresh token"}
+		return domain.User{}, "", domain.NewUnauthorizedError("invalid or expired refresh token")
 	}
 
 	// Rotate: delete old token before issuing new one
@@ -135,7 +135,7 @@ func (s *AuthService) Refresh(ctx context.Context, rawToken string) (domain.User
 
 	user, err := s.users.GetByID(ctx, stored.UserID)
 	if err != nil {
-		return domain.User{}, "", &domain.NotFoundError{Resource: "user"}
+		return domain.User{}, "", err
 	}
 
 	newToken, err := s.createRefreshToken(ctx, user.ID)
