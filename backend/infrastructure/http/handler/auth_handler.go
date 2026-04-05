@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,7 +8,6 @@ import (
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application/dto"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/bootstrap/config"
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 )
@@ -31,9 +29,9 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
 	}
 
-	user, err := h.authService.Register(c.Context(), req)
+	user, err := h.authService.Register(c.UserContext(), req)
 	if err != nil {
-		return h.handleError(c, err, "register")
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(dto.UserResponse{
@@ -50,9 +48,9 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
 	}
 
-	user, refreshToken, err := h.authService.Login(c.Context(), req)
+	user, refreshToken, err := h.authService.Login(c.UserContext(), req)
 	if err != nil {
-		return h.handleError(c, err, "login")
+		return err
 	}
 
 	accessToken, err := h.generateAccessToken(user.ID)
@@ -75,7 +73,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	userID := middleware.GetUserID(c)
 	rawRefreshToken := c.Cookies("refresh_token")
 
-	if err := h.authService.Logout(c.Context(), rawRefreshToken, userID); err != nil {
+	if err := h.authService.Logout(c.UserContext(), rawRefreshToken, userID); err != nil {
 		h.log.Error("logout error", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
 	}
 
@@ -87,9 +85,9 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 func (h *AuthHandler) Refresh(c *fiber.Ctx) error {
 	rawRefreshToken := c.Cookies("refresh_token")
 
-	user, newRefreshToken, err := h.authService.Refresh(c.Context(), rawRefreshToken)
+	user, newRefreshToken, err := h.authService.Refresh(c.UserContext(), rawRefreshToken)
 	if err != nil {
-		return h.handleError(c, err, "refresh")
+		return err
 	}
 
 	accessToken, err := h.generateAccessToken(user.ID)
@@ -143,33 +141,4 @@ func (h *AuthHandler) setAuthCookies(c *fiber.Ctx, accessToken, refreshToken str
 func (h *AuthHandler) clearAuthCookies(c *fiber.Ctx) {
 	c.Cookie(&fiber.Cookie{Name: "access_token", Value: "", MaxAge: -1, Path: "/"})
 	c.Cookie(&fiber.Cookie{Name: "refresh_token", Value: "", MaxAge: -1, Path: "/api/v1/auth"})
-}
-
-func (h *AuthHandler) handleError(c *fiber.Ctx, err error, op string) error {
-	var valErr *domain.ValidationError
-	var conflictErr *domain.ConflictError
-	var unauthErr *domain.UnauthorizedError
-	var notFoundErr *domain.NotFoundError
-
-	switch {
-	case errors.As(err, &valErr):
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "validation_error", "message": valErr.Message,
-		})
-	case errors.As(err, &conflictErr):
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"error": "conflict", "message": conflictErr.Message,
-		})
-	case errors.As(err, &unauthErr):
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "unauthorized", "message": unauthErr.Message,
-		})
-	case errors.As(err, &notFoundErr):
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "not_found", "message": notFoundErr.Error(),
-		})
-	default:
-		h.log.Error("unexpected error", "operation", op, "error", err, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "an unexpected error occurred")
-	}
 }

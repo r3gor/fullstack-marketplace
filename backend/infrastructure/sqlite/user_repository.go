@@ -6,15 +6,19 @@ import (
 	"strings"
 
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite/sqlcdb"
 )
 
 type UserRepository struct {
-	q *sqlcdb.Queries
+	q   *sqlcdb.Queries
+	log *logger.AppLogger
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{q: sqlcdb.New(db)}
+func NewUserRepository(db *sql.DB, log *logger.AppLogger) *UserRepository {
+	return &UserRepository{q: sqlcdb.New(db), log: log}
 }
 
 func (r *UserRepository) Create(ctx context.Context, user domain.User) (domain.User, error) {
@@ -26,9 +30,18 @@ func (r *UserRepository) Create(ctx context.Context, user domain.User) (domain.U
 	})
 	if err != nil {
 		if isUniqueConstraint(err) {
+			r.log.Warn("domain_constraint",
+				"layer", "sqlite", "operation", "create_user", "table", "users",
+				"constraint", "UNIQUE", "field", "email",
+				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
+			)
 			return domain.User{}, &domain.ConflictError{Message: "email already in use"}
 		}
-		return domain.User{}, err
+		r.log.Error("db_error",
+			"layer", "sqlite", "operation", "create_user", "table", "users",
+			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
+		)
+		return domain.User{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "create_user", Resource: "users", Cause: err}
 	}
 	return toDomainUser(row), nil
 }
@@ -37,9 +50,18 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (domain.U
 	row, err := r.q.GetUserByEmail(ctx, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			r.log.Warn("domain_constraint",
+				"layer", "sqlite", "operation", "get_user_by_email", "table", "users",
+				"constraint", "NOT_FOUND",
+				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
+			)
 			return domain.User{}, &domain.NotFoundError{Resource: "user"}
 		}
-		return domain.User{}, err
+		r.log.Error("db_error",
+			"layer", "sqlite", "operation", "get_user_by_email", "table", "users",
+			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
+		)
+		return domain.User{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "get_user_by_email", Resource: "users", Cause: err}
 	}
 	return toDomainUser(row), nil
 }
@@ -48,9 +70,18 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (domain.User, e
 	row, err := r.q.GetUserByID(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			r.log.Warn("domain_constraint",
+				"layer", "sqlite", "operation", "get_user_by_id", "table", "users",
+				"constraint", "NOT_FOUND",
+				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
+			)
 			return domain.User{}, &domain.NotFoundError{Resource: "user"}
 		}
-		return domain.User{}, err
+		r.log.Error("db_error",
+			"layer", "sqlite", "operation", "get_user_by_id", "table", "users",
+			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
+		)
+		return domain.User{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "get_user_by_id", Resource: "users", Cause: err}
 	}
 	return toDomainUser(row), nil
 }
@@ -63,12 +94,26 @@ func (r *UserRepository) Update(ctx context.Context, id, name, email string) (do
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {
+			r.log.Warn("domain_constraint",
+				"layer", "sqlite", "operation", "update_user", "table", "users",
+				"constraint", "NOT_FOUND",
+				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
+			)
 			return domain.User{}, &domain.NotFoundError{Resource: "user"}
 		}
 		if isUniqueConstraint(err) {
+			r.log.Warn("domain_constraint",
+				"layer", "sqlite", "operation", "update_user", "table", "users",
+				"constraint", "UNIQUE", "field", "email",
+				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
+			)
 			return domain.User{}, &domain.ConflictError{Message: "email already in use"}
 		}
-		return domain.User{}, err
+		r.log.Error("db_error",
+			"layer", "sqlite", "operation", "update_user", "table", "users",
+			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
+		)
+		return domain.User{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "update_user", Resource: "users", Cause: err}
 	}
 	return toDomainUser(row), nil
 }
@@ -87,3 +132,4 @@ func toDomainUser(u sqlcdb.User) domain.User {
 func isUniqueConstraint(err error) bool {
 	return strings.Contains(err.Error(), "UNIQUE constraint failed")
 }
+

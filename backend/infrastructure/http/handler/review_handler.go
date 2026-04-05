@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application/dto"
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 )
@@ -35,23 +33,8 @@ func (h *ReviewHandler) Create(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
 	}
 
-	if err := h.reviewService.SubmitReview(c.Context(), userID, productID, req); err != nil {
-		var valErr *domain.ValidationError
-		var conflictErr *domain.ConflictError
-
-		switch {
-		case errors.As(err, &valErr):
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "validation_error", "message": valErr.Message,
-			})
-		case errors.As(err, &conflictErr):
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"error": "conflict", "message": conflictErr.Message,
-			})
-		default:
-			h.log.Error("failed to submit review", "error", err, "user_id", userID, "product_id", productID, "correlation_id", middleware.GetCorrelationID(c))
-			return fiber.NewError(fiber.StatusInternalServerError, "failed to submit review")
-		}
+	if err := h.reviewService.SubmitReview(c.UserContext(), userID, productID, req); err != nil {
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{

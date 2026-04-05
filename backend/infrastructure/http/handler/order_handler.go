@@ -1,12 +1,9 @@
 package handler
 
 import (
-	"errors"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application/dto"
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/port"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
@@ -25,10 +22,9 @@ func NewOrderHandler(orderService *application.OrderService, log *logger.AppLogg
 func (h *OrderHandler) List(c *fiber.Ctx) error {
 	userID := middleware.GetUserID(c)
 
-	orders, err := h.orderService.ListOrders(c.Context(), userID)
+	orders, err := h.orderService.ListOrders(c.UserContext(), userID)
 	if err != nil {
-		h.log.Error("failed to list orders", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to retrieve orders")
+		return err
 	}
 
 	return c.JSON(toOrderListResponse(orders))
@@ -43,16 +39,9 @@ func (h *OrderHandler) Create(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
 	}
 
-	order, err := h.orderService.CreateOrder(c.Context(), userID, req)
+	order, err := h.orderService.CreateOrder(c.UserContext(), userID, req)
 	if err != nil {
-		var valErr *domain.ValidationError
-		if errors.As(err, &valErr) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "validation_error", "message": valErr.Message,
-			})
-		}
-		h.log.Error("failed to create order", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to create order")
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(toOrderResponse(order))
@@ -63,16 +52,9 @@ func (h *OrderHandler) Get(c *fiber.Ctx) error {
 	userID := middleware.GetUserID(c)
 	orderID := c.Params("id")
 
-	order, err := h.orderService.GetOrder(c.Context(), userID, orderID)
+	order, err := h.orderService.GetOrder(c.UserContext(), userID, orderID)
 	if err != nil {
-		var notFoundErr *domain.NotFoundError
-		if errors.As(err, &notFoundErr) {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": "not_found", "message": notFoundErr.Error(),
-			})
-		}
-		h.log.Error("failed to get order", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to retrieve order")
+		return err
 	}
 
 	return c.JSON(toOrderResponse(order))

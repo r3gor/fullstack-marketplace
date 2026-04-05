@@ -15,16 +15,26 @@ var passwordPattern = regexp.MustCompile(`(?i)"password"\s*:\s*"[^"]*"`)
 //   - WARN  for 4xx (client errors: validation, conflict, unauthorized)
 //   - ERROR for 5xx (unexpected server errors)
 //
-// For non-GET requests with status >= 400, the sanitized request body is included
-// so errors can be correlated with what the user sent.
-func RequestLogger(log *logger.AppLogger) fiber.Handler {
+// It receives the errHandler so it can call it directly when there is an error.
+// This ensures the response status code is set before reading it for the log entry —
+// otherwise Fiber's global ErrorHandler would run after the log is written, giving
+// status 200 for all errored responses.
+func RequestLogger(log *logger.AppLogger, errHandler fiber.ErrorHandler) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		start := time.Now()
 
 		// Capture body before processing — Fiber buffers it so this is safe.
 		rawBody := string(c.Body())
 
-		err := c.Next()
+		handlerErr := c.Next()
+
+		// If there's an error, let the error handler write the response first
+		// so c.Response().StatusCode() reflects the real HTTP status.
+		if handlerErr != nil {
+			if err := errHandler(c, handlerErr); err != nil {
+				log.Error("error_handler_failed", "error", err, "original_error", handlerErr)
+			}
+		}
 
 		status := c.Response().StatusCode()
 		latency := time.Since(start)
@@ -58,7 +68,8 @@ func RequestLogger(log *logger.AppLogger) fiber.Handler {
 			log.Info("request", attrs...)
 		}
 
-		return err
+		// Return nil — the response was already written by errHandler above.
+		return nil
 	}
 }
 

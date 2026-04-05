@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/application"
-	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/domain"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/port"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
@@ -25,10 +23,9 @@ func NewFavoriteHandler(favoriteService *application.FavoriteService, log *logge
 func (h *FavoriteHandler) List(c *fiber.Ctx) error {
 	userID := middleware.GetUserID(c)
 
-	favorites, err := h.favoriteService.List(c.Context(), userID)
+	favorites, err := h.favoriteService.List(c.UserContext(), userID)
 	if err != nil {
-		h.log.Error("failed to list favorites", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to retrieve favorites")
+		return err
 	}
 
 	return c.JSON(toFavoriteListResponse(favorites))
@@ -43,15 +40,8 @@ func (h *FavoriteHandler) Add(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid product ID")
 	}
 
-	if err := h.favoriteService.Add(c.Context(), userID, productID); err != nil {
-		var conflictErr *domain.ConflictError
-		if errors.As(err, &conflictErr) {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"error": "conflict", "message": conflictErr.Message,
-			})
-		}
-		h.log.Error("failed to add favorite", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to add favorite")
+	if err := h.favoriteService.Add(c.UserContext(), userID, productID); err != nil {
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusCreated)
@@ -66,9 +56,8 @@ func (h *FavoriteHandler) Remove(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid product ID")
 	}
 
-	if err := h.favoriteService.Remove(c.Context(), userID, productID); err != nil {
-		h.log.Error("failed to remove favorite", "error", err, "user_id", userID, "correlation_id", middleware.GetCorrelationID(c))
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to remove favorite")
+	if err := h.favoriteService.Remove(c.UserContext(), userID, productID); err != nil {
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)

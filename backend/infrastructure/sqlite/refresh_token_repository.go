@@ -5,15 +5,19 @@ import (
 	"database/sql"
 
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/core/port"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/http/middleware"
+	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/logger"
 	"github.com/rogerramosparedes/fullstack-ecommerce/backend/infrastructure/sqlite/sqlcdb"
 )
 
 type RefreshTokenRepository struct {
-	q *sqlcdb.Queries
+	q   *sqlcdb.Queries
+	log *logger.AppLogger
 }
 
-func NewRefreshTokenRepository(db *sql.DB) *RefreshTokenRepository {
-	return &RefreshTokenRepository{q: sqlcdb.New(db)}
+func NewRefreshTokenRepository(db *sql.DB, log *logger.AppLogger) *RefreshTokenRepository {
+	return &RefreshTokenRepository{q: sqlcdb.New(db), log: log}
 }
 
 func (r *RefreshTokenRepository) Create(ctx context.Context, token port.RefreshToken) (port.RefreshToken, error) {
@@ -24,7 +28,11 @@ func (r *RefreshTokenRepository) Create(ctx context.Context, token port.RefreshT
 		ExpiresAt: token.ExpiresAt,
 	})
 	if err != nil {
-		return port.RefreshToken{}, err
+		r.log.Error("db_error",
+			"layer", "sqlite", "operation", "create_refresh_token", "table", "refresh_tokens",
+			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
+		)
+		return port.RefreshToken{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "create_refresh_token", Resource: "refresh_tokens", Cause: err}
 	}
 	return port.RefreshToken{
 		ID:        row.ID,
@@ -39,9 +47,18 @@ func (r *RefreshTokenRepository) GetByHash(ctx context.Context, tokenHash string
 	row, err := r.q.GetRefreshToken(ctx, tokenHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			r.log.Warn("domain_constraint",
+				"layer", "sqlite", "operation", "get_refresh_token", "table", "refresh_tokens",
+				"constraint", "NOT_FOUND",
+				"correlation_id", middleware.CorrelationIDFromCtx(ctx),
+			)
 			return port.RefreshToken{}, &NotFoundTokenError{}
 		}
-		return port.RefreshToken{}, err
+		r.log.Error("db_error",
+			"layer", "sqlite", "operation", "get_refresh_token", "table", "refresh_tokens",
+			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
+		)
+		return port.RefreshToken{}, &infrastructure.InfraError{Layer: "sqlite", Operation: "get_refresh_token", Resource: "refresh_tokens", Cause: err}
 	}
 	return port.RefreshToken{
 		ID:        row.ID,
@@ -53,11 +70,25 @@ func (r *RefreshTokenRepository) GetByHash(ctx context.Context, tokenHash string
 }
 
 func (r *RefreshTokenRepository) DeleteByHash(ctx context.Context, tokenHash string) error {
-	return r.q.DeleteRefreshToken(ctx, tokenHash)
+	if err := r.q.DeleteRefreshToken(ctx, tokenHash); err != nil {
+		r.log.Error("db_error",
+			"layer", "sqlite", "operation", "delete_refresh_token", "table", "refresh_tokens",
+			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
+		)
+		return &infrastructure.InfraError{Layer: "sqlite", Operation: "delete_refresh_token", Resource: "refresh_tokens", Cause: err}
+	}
+	return nil
 }
 
 func (r *RefreshTokenRepository) DeleteByUserID(ctx context.Context, userID string) error {
-	return r.q.DeleteUserRefreshTokens(ctx, userID)
+	if err := r.q.DeleteUserRefreshTokens(ctx, userID); err != nil {
+		r.log.Error("db_error",
+			"layer", "sqlite", "operation", "delete_user_refresh_tokens", "table", "refresh_tokens",
+			"correlation_id", middleware.CorrelationIDFromCtx(ctx), "error", err,
+		)
+		return &infrastructure.InfraError{Layer: "sqlite", Operation: "delete_user_refresh_tokens", Resource: "refresh_tokens", Cause: err}
+	}
+	return nil
 }
 
 // NotFoundTokenError signals a missing/expired refresh token.

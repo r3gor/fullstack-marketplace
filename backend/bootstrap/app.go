@@ -38,16 +38,16 @@ func Run() {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
-	// Repositories
-	userRepo := sqlite.NewUserRepository(db)
-	refreshTokenRepo := sqlite.NewRefreshTokenRepository(db)
-	favoriteRepo := sqlite.NewFavoriteRepository(db)
-	orderRepo := sqlite.NewOrderRepository(db)
-	reviewSubmissionRepo := sqlite.NewReviewSubmissionRepository(db)
-
 	// Loggers
 	auditLog := logger.NewAuditLogger()
 	appLog := logger.NewAppLogger()
+
+	// Repositories
+	userRepo             := sqlite.NewUserRepository(db, appLog)
+	refreshTokenRepo     := sqlite.NewRefreshTokenRepository(db, appLog)
+	favoriteRepo         := sqlite.NewFavoriteRepository(db, appLog)
+	orderRepo            := sqlite.NewOrderRepository(db, appLog)
+	reviewSubmissionRepo := sqlite.NewReviewSubmissionRepository(db, appLog)
 
 	// Services
 	authService := application.NewAuthService(userRepo, refreshTokenRepo, auditLog, cfg.RefreshTokenExpiry)
@@ -55,18 +55,20 @@ func Run() {
 	favoriteService := application.NewFavoriteService(favoriteRepo, auditLog)
 	orderService := application.NewOrderService(orderRepo, auditLog)
 
-	strapiClient := strapi.NewClient(cfg.StrapiAPIURL, cfg.StrapiAPIToken)
+	strapiClient := strapi.NewClient(cfg.StrapiAPIURL, cfg.StrapiAPIToken, appLog)
 	reviewService := application.NewReviewService(orderRepo, reviewSubmissionRepo, strapiClient, auditLog)
+
+	errHandler := middleware.ErrorHandler(appLog)
 
 	app := fiber.New(fiber.Config{
 		AppName:        "Fullstack E-commerce API",
-		ErrorHandler:   errorHandler,
+		ErrorHandler:   errHandler,
 		ReadBufferSize: 16 * 1024, // 16 KB — prevents 431 when JWT cookies are sent
 	})
 
 	app.Use(recover.New())
 	app.Use(middleware.CorrelationID())
-	app.Use(middleware.RequestLogger(appLog))
+	app.Use(middleware.RequestLogger(appLog, errHandler))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:3000",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
@@ -81,29 +83,4 @@ func Run() {
 	if err := app.Listen(addr); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
-}
-
-func errorHandler(c *fiber.Ctx, err error) error {
-	code := fiber.StatusInternalServerError
-	if e, ok := err.(*fiber.Error); ok {
-		code = e.Code
-	}
-
-	errCode := map[int]string{
-		fiber.StatusBadRequest:          "validation_error",
-		fiber.StatusUnauthorized:        "unauthorized",
-		fiber.StatusForbidden:           "forbidden",
-		fiber.StatusNotFound:            "not_found",
-		fiber.StatusConflict:            "conflict",
-		fiber.StatusInternalServerError: "internal_server_error",
-	}
-	errKey, ok := errCode[code]
-	if !ok {
-		errKey = "internal_server_error"
-	}
-
-	return c.Status(code).JSON(fiber.Map{
-		"error":   errKey,
-		"message": err.Error(),
-	})
 }
