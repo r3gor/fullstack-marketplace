@@ -54,7 +54,7 @@ export function ProductCard({ product, isFavorite = false }: ProductCardProps) {
 
         {/* Favorite button */}
         <div className="absolute right-2 top-2">
-          <FavoriteButton documentId={product.documentId} isFavorite={isFavorite} />
+          <FavoriteButton productId={product.id} isFavorite={isFavorite} />
         </div>
       </div>
 

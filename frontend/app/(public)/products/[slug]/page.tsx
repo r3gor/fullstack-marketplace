@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getProductBySlug, getProductSlugs } from '@/lib/strapi'
+import { getFavorites } from '@/lib/dal'
 import { ProductGallery } from '@/components/organisms/ProductGallery'
 import { ProductInfo } from '@/components/organisms/ProductInfo'
 import { Breadcrumb } from '@/components/molecules/Breadcrumb'
@@ -22,6 +23,15 @@ export default async function ProductDetailPage({
 
   if (!product) notFound()
 
+  // Check if the authenticated user has this product favorited (fails silently if not logged in)
+  let isFavorite = false
+  try {
+    const favs = await getFavorites()
+    isFavorite = favs.some((f) => f.product_id === product.id)
+  } catch {
+    // not authenticated — isFavorite stays false
+  }
+
   const { title, description, thumbnail, images, warrantyInformation, shippingInformation, returnPolicy, category } = product
 
   const breadcrumbItems = [
@@ -36,7 +46,7 @@ export default async function ProductDetailPage({
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
         <ProductGallery images={images ?? []} thumbnail={thumbnail} title={title} />
-        <ProductInfo product={product} />
+        <ProductInfo product={product} isFavorite={isFavorite} />
       </div>
 
       {description && (

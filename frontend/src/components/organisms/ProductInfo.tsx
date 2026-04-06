@@ -8,9 +8,10 @@ import type { StrapiProduct } from '@/lib/strapi'
 
 interface ProductInfoProps {
   product: StrapiProduct
+  isFavorite?: boolean
 }
 
-export function ProductInfo({ product }: ProductInfoProps) {
+export function ProductInfo({ product, isFavorite = false }: ProductInfoProps) {
   const {
     id,
     documentId,
@@ -59,7 +60,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <div className="flex-1">
           <AddToCartButton productId={id} title={title} price={price} thumbnail={thumbnail} disabled={!inStock} />
         </div>
-        <FavoriteButton documentId={documentId} />
+        <FavoriteButton productId={id} isFavorite={isFavorite} />
       </div>
 
       {/* Meta table */}
