@@ -13,7 +13,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, isFavorite = false }: ProductCardProps) {
-  const { title, slug, price, discountPercentage, rating, thumbnail, availabilityStatus, category } = product
+  const { id, title, slug, price, discountPercentage, rating, thumbnail, availabilityStatus, category } = product
   const outOfStock = availabilityStatus?.toLowerCase() === 'out of stock'
 
   return (
@@ -87,7 +87,7 @@ export function ProductCard({ product, isFavorite = false }: ProductCardProps) {
         />
 
         {/* Add to cart */}
-        <AddToCartButton documentId={product.documentId} title={title} />
+        <AddToCartButton productId={id} title={title} price={price} thumbnail={thumbnail} />
       </div>
     </Card>
   )

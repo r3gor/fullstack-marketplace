@@ -12,6 +12,7 @@ interface ProductInfoProps {
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const {
+    id,
     documentId,
     title,
     price,
@@ -24,6 +25,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
     weight,
     dimensions,
     category,
+    thumbnail,
   } = product
 
   const inStock = availabilityStatus?.toLowerCase() !== 'out of stock'
@@ -55,7 +57,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* Actions */}
       <div className="flex gap-3 pt-2">
         <div className="flex-1">
-          <AddToCartButton documentId={documentId} title={title} disabled={!inStock} />
+          <AddToCartButton productId={id} title={title} price={price} thumbnail={thumbnail} disabled={!inStock} />
         </div>
         <FavoriteButton documentId={documentId} />
       </div>

@@ -1,30 +1,19 @@
 'use client'
 
+import { useCartStore } from '@/lib/stores'
 import { Button } from '@/components/atoms/Button'
 import { CountBadge } from '@/components/atoms/CountBadge'
-
-// Placeholder: cart count will come from Zustand store in future iteration
-const cartCount = 0
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ShoppingBasket01Icon } from '@hugeicons/core-free-icons'
 
 export function CartButton() {
+  const openCart = useCartStore((s) => s.openCart)
+  const count = useCartStore((s) => s.count())
+
   return (
-    <Button variant="icon" aria-label="Abrir carrito" className="relative">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="9" cy="21" r="1" />
-        <circle cx="20" cy="21" r="1" />
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-      </svg>
-      <CountBadge count={cartCount} />
+    <Button variant="icon" aria-label="Abrir carrito" className="relative" onClick={openCart}>
+      <HugeiconsIcon icon={ShoppingBasket01Icon} size={20} color="currentColor" strokeWidth={1.5} />
+      <CountBadge count={count} />
     </Button>
   )
 }
