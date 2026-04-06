@@ -2,14 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { UserCircleIcon, FavouriteIcon, PackageIcon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/lib/stores'
 import { Separator } from '@/components/ui/separator'
 
 const navItems = [
-  { href: '/account', label: 'Mi perfil', icon: '👤' },
-  { href: '/account/favorites', label: 'Favoritos', icon: '❤️' },
-  { href: '/account/orders', label: 'Mis pedidos', icon: '📦' },
+  { href: '/account', label: 'Mi perfil', icon: UserCircleIcon },
+  { href: '/account/favorites', label: 'Favoritos', icon: FavouriteIcon },
+  { href: '/account/orders', label: 'Mis pedidos', icon: PackageIcon },
 ]
 
 export function AccountSidebar() {
@@ -41,7 +43,7 @@ export function AccountSidebar() {
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
               )}
             >
-              <span>{icon}</span>
+              <HugeiconsIcon icon={icon} size={18} color="currentColor" strokeWidth={1.5} />
               {label}
             </Link>
           )
