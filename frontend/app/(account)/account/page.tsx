@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { serverUser } from '@/lib/api/server'
+import { getMe } from '@/lib/dal'
 import { ProfileForm } from '@/components/organisms/ProfileForm'
 
 export const metadata: Metadata = { title: 'Mi perfil' }
@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Mi perfil' }
 export default async function AccountPage() {
   let userData
   try {
-    userData = await serverUser.me()
+    userData = await getMe()
   } catch {
     redirect('/login')
   }
