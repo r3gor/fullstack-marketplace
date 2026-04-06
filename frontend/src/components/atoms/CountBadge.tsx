@@ -1,9 +1,9 @@
-interface BadgeProps {
+interface CountBadgeProps {
   count: number
   className?: string
 }
 
-export function Badge({ count, className = '' }: BadgeProps) {
+export function CountBadge({ count, className = '' }: CountBadgeProps) {
   if (count <= 0) return null
 
   return (
