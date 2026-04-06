@@ -9,7 +9,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
-      {/* <CartDrawer /> */}
+      <CartDrawer />
     </Providers>
   )
 }
