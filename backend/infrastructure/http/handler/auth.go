@@ -79,7 +79,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	}
 
 	h.clearAuthCookies(c)
-	return c.SendStatus(fiber.StatusNoContent)
+	return c.JSON(fiber.Map{"message": "logged out successfully"})
 }
 
 // Refresh godoc — POST /api/v1/auth/refresh

@@ -15,7 +15,7 @@ export const auth = {
     }),
 
   logout: () =>
-    request<void>('/api/v1/auth/logout', { method: 'POST' }),
+    request<{ message: string }>('/api/v1/auth/logout', { method: 'POST' }),
 
   refresh: () =>
     request<UserResponse>('/api/v1/auth/refresh', { method: 'POST' }),

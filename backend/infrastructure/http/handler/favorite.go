@@ -45,7 +45,7 @@ func (h *FavoriteHandler) Add(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.SendStatus(fiber.StatusCreated)
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"product_id": productID})
 }
 
 // Remove godoc — DELETE /api/v1/favorites/:productId
@@ -61,7 +61,7 @@ func (h *FavoriteHandler) Remove(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.SendStatus(fiber.StatusNoContent)
+	return c.JSON(fiber.Map{"message": "removed from favorites"})
 }
 
 type favoriteResponse struct {
