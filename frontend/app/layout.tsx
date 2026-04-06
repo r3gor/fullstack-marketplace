@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { MainLayout } from "@/components/templates/MainLayout";
 import { cn } from "@/lib/utils";
 
 const satoshi = localFont({
@@ -26,9 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={cn("font-sans", satoshi.variable)}>
-      <body className="flex min-h-full flex-col">
-        <MainLayout>{children}</MainLayout>
-      </body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }
