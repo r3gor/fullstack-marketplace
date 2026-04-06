@@ -1,7 +1,14 @@
 'use client'
 
-// Placeholder: Add Zustand StoreProvider, ToastProvider, etc. here as the app grows
+import { Toaster } from 'sonner'
+import { AuthInitializer } from './AuthInitializer'
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return (
+    <>
+      <AuthInitializer />
+      {children}
+      <Toaster position="bottom-right" richColors closeButton />
+    </>
+  )
 }
