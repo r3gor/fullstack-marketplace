@@ -113,6 +113,19 @@ export async function getProductBySlug(slug: string): Promise<StrapiProduct | nu
   return json.data?.[0] ?? null
 }
 
+export async function getProductsByIds(ids: number[]): Promise<StrapiProduct[]> {
+  if (ids.length === 0) return []
+
+  const filters = ids.map((id, i) => `filters[id][$in][${i}]=${id}`).join('&')
+  const url = `${STRAPI_URL}/api/products?${filters}&${PRODUCT_POPULATE}&pagination[pageSize]=${ids.length}`
+
+  const res = await fetch(url, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch products by ids: ${res.status}`)
+
+  const json = await res.json()
+  return json.data ?? []
+}
+
 export async function getProductSlugs(): Promise<string[]> {
   const res = await fetch(
     `${STRAPI_URL}/api/products?fields[0]=slug&pagination[pageSize]=200`,
